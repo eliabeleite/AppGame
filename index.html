@@ -80,6 +80,8 @@ button:focus-visible{outline:4px solid var(--blue);outline-offset:3px}
 .big.sm{font-size:21px;padding:12px 20px}
 #title{flex-direction:column;gap:24px;background:radial-gradient(ellipse at center,rgba(30,60,110,.5),rgba(30,60,110,.12) 70%)}
 #title .big{font-size:34px;padding:16px 46px;animation:pulse 1.6s infinite}
+#title .big.sm{font-size:20px;padding:11px 18px;animation:none}
+#title .row{gap:10px}
 h2{margin:0 0 10px;font-size:28px;font-weight:700}
 h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex;align-items:center;gap:6px}
 .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:7px}
@@ -96,7 +98,7 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
 .stk canvas{width:100%;max-width:90px;height:auto;aspect-ratio:1}
 .stk.off{background:#ece4d3;color:#a99c83}
 #albCount{margin:0 0 10px;font-weight:600}
-.shopw{font-size:44px;letter-spacing:6px;margin:2px 0 4px}
+.shopw{margin:2px 0 4px}
 .shopl{text-align:left;margin:6px auto 4px;padding-left:22px;max-width:300px;font-size:16px;font-weight:600;line-height:1.45}
 .shopm{font-size:15px;font-weight:600;margin:6px 0 0;min-height:1.2em}
 .lockb{font-size:12px;font-weight:700;background:var(--barn);color:#fff;border-radius:8px;padding:2px 8px;margin-left:auto}
@@ -114,6 +116,24 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
 .wcard.on{outline:4px solid var(--grass)}
 .wcard.lock{background:#ece4d3;color:#a99c83}
 .wcard small{font-size:13px;font-weight:600}
+.ic{display:inline-flex;width:1.05em;height:1.05em;vertical-align:-.16em;flex:none}
+.ic svg{width:100%;height:100%;overflow:visible}
+.ib .ic{width:26px;height:26px}
+.big .ic{width:.95em;height:.95em}
+#scoreBox .ic{width:15px;height:15px;vertical-align:-2px}
+.shopw{display:flex;justify-content:center;gap:14px}
+.shopw .ic{width:46px;height:46px}
+.stars span .ic{width:56px;height:56px}
+.lv .st .ic{width:10px;height:10px;vertical-align:0}
+.lv .lk .ic{width:20px;height:20px}
+.lv .st .ic + .ic{margin-left:1px}
+h3 .ic{width:22px;height:22px}
+.lockb .ic{width:12px;height:12px;vertical-align:-1px}
+#resEmoji canvas{width:84px;height:84px}
+#resEmoji .ic{width:64px;height:64px}
+.restz canvas{width:120px;height:120px}
+.restz{display:flex;align-items:flex-end;justify-content:center;font-size:inherit}
+.restz .ic{width:40px;height:40px;margin-left:-10px}
 .namef{display:flex;flex-direction:column;gap:6px;text-align:left}
 .namef label{font-weight:600;font-size:15px}
 .namef label small{font-weight:500;opacity:.7}
@@ -125,7 +145,7 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
 .lv[disabled]{background:#e4dccb;box-shadow:0 5px 0 #c4b89f;color:#a99c83;cursor:default;font-size:16px}
 .row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px}
 .stars{display:flex;justify-content:center;gap:6px;margin:4px 0 2px}
-.stars span{font-size:52px;filter:grayscale(1);opacity:.25;transform:scale(.6);transition:all .3s cubic-bezier(.2,1.6,.4,1)}
+.stars span{filter:grayscale(1);opacity:.25;transform:scale(.6);transition:all .3s cubic-bezier(.2,1.6,.4,1)}
 .stars span.on{filter:none;opacity:1;transform:scale(1)}
 #resMsg{font-size:19px;font-weight:600;margin:4px 0 0}
 #resScore{font-size:16px;margin:6px 0 0;font-variant-numeric:tabular-nums}
@@ -145,20 +165,20 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
 <div id="hud" hidden>
   <div class="bar">
     <button class="ib" id="bHome" aria-label="Escolher fase"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></button>
-    <div class="grow"><div id="lvlName">Fase 1</div><div id="scoreBox">⭐ 0</div></div>
-    <button class="ib" id="bTip" aria-label="Dica">💡</button>
-    <button class="ib" id="bMusic" aria-label="Música">🎵</button>
-    <button class="ib" id="bSound" aria-label="Sons e voz">🔊</button>
+    <div class="grow"><div id="lvlName">Fase 1</div><div id="scoreBox"><i data-ic="star"></i> 0</div></div>
+    <button class="ib" id="bTip" aria-label="Dica"><i data-ic="bulb"></i></button>
+    <button class="ib" id="bMusic" aria-label="Música"><i data-ic="music"></i></button>
+    <button class="ib" id="bSound" aria-label="Sons e voz"><i data-ic="sound"></i></button>
     <button class="ib" id="bRetry" aria-label="Recomeçar fase"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg></button>
   </div>
   <div class="goal"><div id="goalText"></div><div id="spears"></div></div>
 </div>
 
 <div id="title" class="ov">
-  <button class="ib gear" id="bParents" aria-label="Área dos pais">⚙️</button>
+  <button class="ib gear" id="bParents" aria-label="Área dos pais"><i data-ic="gear"></i></button>
   <h1 class="logo">Lança<br>Penas<small>galinhas voadoras</small></h1>
-  <button class="big" id="bPlay">▶ Jogar</button>
-  <div class="row" style="margin-top:0"><button class="big alt sm" id="bAlbum">📒 Álbum</button><button class="big alt sm" id="bName">✏️ Nome</button></div>
+  <button class="big" id="bPlay"><i data-ic="play"></i> Jogar</button>
+  <div class="row" style="margin-top:0"><button class="big alt sm" id="bAlbum"><i data-ic="album"></i> Álbum</button><button class="big alt sm" id="bName"><i data-ic="pencil"></i> Nome</button></div>
   <p class="tag" id="titleTag">Mire, lance e veja as galinhas voarem!</p>
 </div>
 
@@ -166,7 +186,7 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
   <div class="card levels-card">
     <h2>Escolha a fase</h2>
     <div id="lvWorlds"></div>
-    <div class="row"><button class="big alt sm" id="bBackTitle">◀ Voltar</button><button class="big alt sm" id="bAlbum2">📒 Álbum</button><button class="big alt sm" id="bWeapons">🎯 Lançador</button></div>
+    <div class="row"><button class="big alt sm" id="bBackTitle"><i data-ic="back"></i> Voltar</button><button class="big alt sm" id="bAlbum2"><i data-ic="album"></i> Álbum</button><button class="big alt sm" id="bWeapons"><i data-ic="target"></i> Lançador</button></div>
   </div>
 </div>
 
@@ -178,11 +198,11 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
       <input id="kidName" maxlength="20" autocomplete="off" placeholder="Ex.: Ana">
       <label for="kidSay">Como a voz deve falar <small>(opcional, se ela errar)</small></label>
       <input id="kidSay" maxlength="30" autocomplete="off" placeholder="Ex.: Aná">
-      <label for="kidVoice">Voz do nome <small>(teste no 🔊 e escolha a mais parecida)</small></label>
+      <label for="kidVoice">Voz do nome <small>(toque em Ouvir e escolha a mais parecida)</small></label>
       <select id="kidVoice"><option value="">Automática</option></select>
       <div class="row">
-        <button type="button" class="big alt sm" id="bHear">🔊 Ouvir</button>
-        <button type="submit" class="big sm">Pronto ▶</button>
+        <button type="button" class="big alt sm" id="bHear"><i data-ic="sound"></i> Ouvir</button>
+        <button type="submit" class="big sm">Pronto <i data-ic="next"></i></button>
       </div>
     </form>
   </div>
@@ -191,7 +211,7 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
 <div id="shopOv" class="ov dim" hidden>
   <div class="card">
     <h2>Jogo completo</h2>
-    <div class="shopw">🌅 🌙 🌈</div>
+    <div class="shopw"><i data-ic="sunset"></i><i data-ic="moon"></i><i data-ic="rainbow"></i></div>
     <ul class="shopl">
       <li>3 mundos novos e 18 fases</li>
       <li>Portais, vidro, lança ímã e a galinha rainha</li>
@@ -203,7 +223,7 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
       <button class="big sm" id="bShopBuy">Desbloquear</button>
     </div>
     <div class="row">
-      <button class="big alt sm" id="bShopBack">◀ Voltar</button>
+      <button class="big alt sm" id="bShopBack"><i data-ic="back"></i> Voltar</button>
       <button class="big alt sm" id="bShopRestore">Restaurar compra</button>
     </div>
   </div>
@@ -239,7 +259,7 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
       <small>Quando o tempo acaba, as galinhas vão dormir por 20 minutos.</small>
     </div>
     <div class="row">
-      <button type="button" class="big alt sm" id="bPName">✏️ Nome e voz</button>
+      <button type="button" class="big alt sm" id="bPName"><i data-ic="pencil"></i> Nome e voz</button>
       <button type="button" class="big alt sm" id="bPReset">Apagar progresso</button>
     </div>
     <p id="pMsg" class="shopm"></p>
@@ -250,7 +270,7 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
 <div id="restOv" class="ov dim" hidden>
   <div class="card">
     <h2 id="restTitle">Hora de descansar!</h2>
-    <div class="restz">😴🐔💤</div>
+    <div class="restz" id="restPic"></div>
     <p class="shopm">As galinhas foram dormir. Volte mais tarde para brincar de novo!</p>
     <p class="shopm" id="restLeft"></p>
     <div class="row"><button type="button" class="big alt sm" id="bRestParents">Área dos pais</button></div>
@@ -271,7 +291,7 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
     <h2>Álbum de figurinhas</h2>
     <p id="albCount"></p>
     <div class="alb" id="albGrid"></div>
-    <div class="row"><button class="big alt sm" id="bAlbBack">◀ Voltar</button></div>
+    <div class="row"><button class="big alt sm" id="bAlbBack"><i data-ic="back"></i> Voltar</button></div>
   </div>
 </div>
 
@@ -280,12 +300,12 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
     <h2 id="resTitle">Muito bem!</h2>
     <div id="resEmoji"></div>
     <div id="resSticker" hidden></div>
-    <div class="stars" id="resStars"><span>⭐</span><span>⭐</span><span>⭐</span></div>
+    <div class="stars" id="resStars"><span><i data-ic="star"></i></span><span><i data-ic="star"></i></span><span><i data-ic="star"></i></span></div>
     <p id="resMsg"></p>
     <p id="resScore"></p>
     <div class="row">
-      <button class="big alt sm" id="bResRetry">↻ De novo</button>
-      <button class="big sm" id="bResNext">Próxima ▶</button>
+      <button class="big alt sm" id="bResRetry"><i data-ic="retry"></i> De novo</button>
+      <button class="big sm" id="bResNext">Próxima <i data-ic="next"></i></button>
     </div>
   </div>
 </div>
@@ -538,16 +558,16 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const $ = id => document.getElementById(id);
 const COLORS = { red: { hex: '#ef4444', name: 'vermelho' }, blue: { hex: '#3b82f6', name: 'azul' }, green: { hex: '#22c55e', name: 'verde' } };
 const SHAPES = { star: 'estrela', circle: 'círculo', triangle: 'triângulo', square: 'quadrado' };
-const WORD_EMOJI = { OVO: '🥚', SOL: '☀️', GATO: '🐱', PATO: '🦆' };
+const WORD_ICON = { OVO: 'egg', SOL: 'sun', GATO: 'cat', PATO: 'duck', BOLA: 'ball' };
 const PERS = ['plain', 'derp', 'dancer', 'cool', 'mama', 'sleepy'];
 const WORLDS = [
-  { name: 'Fazenda', icon: '🌞', sky: ['#78cdfb', '#d9f4ff'], far: '#a9c9e6', farDk: '#8db2d6', hill1: '#9fd97c', hill2: '#7cc55c', tree: '#4fa83a',
+  { name: 'Fazenda', icon: 'sun', sky: ['#78cdfb', '#d9f4ff'], far: '#a9c9e6', farDk: '#8db2d6', hill1: '#9fd97c', hill2: '#7cc55c', tree: '#4fa83a',
     grass: '#5fb846', grassDk: '#4a9c35', bg: ['#5ab8ef', '#bfe9ff'], time: 'day' },
-  { name: 'Pôr do sol', icon: '🌅', sky: ['#ff8f6b', '#ffe1a0'], far: '#c48aa8', farDk: '#a66f8e', hill1: '#c3a45a', hill2: '#98984a', tree: '#6f8a3a',
+  { name: 'Pôr do sol', icon: 'sunset', sky: ['#ff8f6b', '#ffe1a0'], far: '#c48aa8', farDk: '#a66f8e', hill1: '#c3a45a', hill2: '#98984a', tree: '#6f8a3a',
     grass: '#7aa83f', grassDk: '#5f8a2f', bg: ['#f2806a', '#ffd5a0'], time: 'dusk' },
-  { name: 'Noite', icon: '🌙', sky: ['#18214a', '#3e4f8e'], far: '#2b3566', farDk: '#222a52', hill1: '#2f5a4a', hill2: '#244a3c', tree: '#1e4434',
+  { name: 'Noite', icon: 'moon', sky: ['#18214a', '#3e4f8e'], far: '#2b3566', farDk: '#222a52', hill1: '#2f5a4a', hill2: '#244a3c', tree: '#1e4434',
     grass: '#2f6b3a', grassDk: '#1f4f2a', bg: ['#111a3a', '#2c3a72'], time: 'night' },
-  { name: 'Arco-íris', icon: '🌈', sky: ['#b9a6ff', '#ffd9f1'], far: '#cbb9ff', farDk: '#ab98ee', hill1: '#a5e8c9', hill2: '#86dbb5', tree: '#ff8fb8',
+  { name: 'Arco-íris', icon: 'rainbow', sky: ['#b9a6ff', '#ffd9f1'], far: '#cbb9ff', farDk: '#ab98ee', hill1: '#a5e8c9', hill2: '#86dbb5', tree: '#ff8fb8',
     grass: '#7ed9a8', grassDk: '#5cc48d', bg: ['#a58cff', '#ffcce9'], time: 'rainbow' },
 ];
 const worldOf = i => Math.min(3, Math.floor(i / 6));
@@ -960,7 +980,7 @@ const SPEAR_SVG = '<svg viewBox="0 0 24 24"><g transform="rotate(-45 12 12)"><re
 function updateGoal() {
   const g = $('goalText'); let h = '';
   const n = targetsTotal(), got = n - targetsLeft();
-  if (L.type === 'all') h = `🐔 Todas! <span class="cnt">${got}/${n}</span>`;
+  if (L.type === 'all') h = `${ic('chicken')} Todas! <span class="cnt">${got}/${n}</span>`;
   else if (L.type === 'color') h = `Só chapéu <span class="chip" style="background:${COLORS[L.goal].hex}"></span> <b>${COLORS[L.goal].name.toUpperCase()}</b> <span class="cnt">${got}/${n}</span>`;
   else if (L.type === 'shape') h = `Só ${shapeSVG(L.goal, '#ffd23f')} <b>${SHAPES[L.goal].toUpperCase()}</b> <span class="cnt">${got}/${n}</span>`;
   else h = `<span class="slots">${slots.map(s => `<span class="slot${s.ok ? ' ok' : ''}">${s.ch}</span>`).join('')}</span>`;
@@ -971,7 +991,7 @@ function updateGoal() {
   $('spears').innerHTML = sp;
 }
 function updateScore(bump) {
-  const el = $('scoreBox'); el.textContent = '⭐ ' + score;
+  const el = $('scoreBox'); el.innerHTML = ic('star') + ' ' + score;
   if (bump) { el.classList.add('bump'); setTimeout(() => el.classList.remove('bump'), 150); }
 }
 
@@ -1016,6 +1036,79 @@ function openParents() {
   if (restActive()) { Save.d.restUntil = 0; playMs = 0; Save.save(); $('pMsg').textContent = 'Descanso encerrado. O tempo de jogo recomeçou.'; }
   paintParents();
 }
+/* ---------------- Ícones desenhados (sem emoji) ---------------- */
+const IC_S = 'fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"';
+const ICONS = {
+  play: `<svg viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z" fill="currentColor"/></svg>`,
+  back: `<svg viewBox="0 0 24 24" ${IC_S} stroke-width="3.2"><path d="M15 5l-7 7 7 7"/></svg>`,
+  next: `<svg viewBox="0 0 24 24" ${IC_S} stroke-width="3.2"><path d="M9 5l7 7-7 7"/></svg>`,
+  retry: `<svg viewBox="0 0 24 24" ${IC_S} stroke-width="3"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg>`,
+  music: `<svg viewBox="0 0 24 24" ${IC_S}><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="17" cy="16" r="3" fill="currentColor"/></svg>`,
+  sound: `<svg viewBox="0 0 24 24" ${IC_S}><path d="M11 5L6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>`,
+  mute: `<svg viewBox="0 0 24 24" ${IC_S}><path d="M11 5L6 9H3v6h3l5 4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6"/></svg>`,
+  bulb: `<svg viewBox="0 0 24 24" ${IC_S}><path d="M9 18h6M10 21.5h4"/><path d="M12 2.5a6.5 6.5 0 0 0-4.2 11.5c.9.8 1.2 1.6 1.2 2.6h6c0-1 .3-1.8 1.2-2.6A6.5 6.5 0 0 0 12 2.5z" fill="#ffd23f"/></svg>`,
+  gear: `<svg viewBox="0 0 24 24" ${IC_S} stroke-width="2.2"><path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.3a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.2.1a2 2 0 0 1 1 1.7v.5a2 2 0 0 1-1 1.7l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.3a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.3a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.7v-.5a2 2 0 0 1 1-1.7l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.3a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3.2"/></svg>`,
+  album: `<svg viewBox="0 0 24 24" ${IC_S}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z" fill="#ff9ecf"/><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5"/><path d="M12 6.5l1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6-1.9-1.8 2.6-.4z" fill="#ffd23f" stroke-width="1.4"/></svg>`,
+  pencil: `<svg viewBox="0 0 24 24" ${IC_S}><path d="M16.5 3.5l4 4L8 20H4v-4z" fill="#ffd23f"/><path d="M13.5 6.5l4 4"/><path d="M4 16l4 4" stroke-width="1.6"/></svg>`,
+  target: `<svg viewBox="0 0 24 24" ${IC_S}><circle cx="12" cy="12" r="9.5" fill="#fff"/><circle cx="12" cy="12" r="6" fill="#e5533d" stroke="none"/><circle cx="12" cy="12" r="2.6" fill="#fff" stroke="none"/><circle cx="12" cy="12" r="9.5"/></svg>`,
+  lock: `<svg viewBox="0 0 24 24" ${IC_S}><rect x="4.5" y="10.5" width="15" height="10.5" rx="2.5" fill="currentColor"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></svg>`,
+  star: `<svg viewBox="0 0 24 24"><path d="M12 2.2l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.3 1.3-6.6L2.5 9.1l6.6-.8z" fill="#ffd23f" stroke="#b8860b" stroke-width="1.5" stroke-linejoin="round"/><path d="M9 9.5l1.5-.3" stroke="#fff8c4" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+  starOff: `<svg viewBox="0 0 24 24"><path d="M12 2.2l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17l-5.9 3.3 1.3-6.6L2.5 9.1l6.6-.8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" opacity=".55"/></svg>`,
+  trophy: `<svg viewBox="0 0 24 24" ${IC_S} stroke-width="2"><path d="M8 3.5h8v5.5a4 4 0 0 1-8 0z" fill="#ffd23f"/><path d="M8 5.5H5a3 3 0 0 0 3.2 4M16 5.5h3a3 3 0 0 1-3.2 4M12 13v3.5M8.5 21h7M9.5 16.5h5v4.5h-5z"/></svg>`,
+  chicken: `<svg viewBox="0 0 24 24"><path d="M10 3.6a1.8 1.8 0 0 1 3.3-.9 1.8 1.8 0 0 1 3 1.9" fill="#e5533d" stroke="#8f2318" stroke-width="1.2"/><ellipse cx="12.5" cy="13.5" rx="7.5" ry="8" fill="#ffd83d" stroke="#b06a00" stroke-width="1.6"/><circle cx="15" cy="10" r="2.3" fill="#fff" stroke="#5a3410" stroke-width="1"/><circle cx="15.6" cy="10.2" r="1.1" fill="#1d1208"/><path d="M19.5 12.5l3 1.2-3 1.3z" fill="#ff9a1f" stroke="#9a4a00" stroke-width="1"/><ellipse cx="10" cy="15.5" rx="3.2" ry="2.2" fill="#f5c400" stroke="#b06a00" stroke-width="1"/></svg>`,
+  sun: `<svg viewBox="0 0 24 24"><g stroke="#f2a900" stroke-width="2.2" stroke-linecap="round"><path d="M12 1.5v2.5M12 20v2.5M1.5 12H4M20 12h2.5M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8"/></g><circle cx="12" cy="12" r="5.5" fill="#ffd23f" stroke="#e09a00" stroke-width="1.5"/></svg>`,
+  sunset: `<svg viewBox="0 0 24 24"><path d="M5 16a7 7 0 0 1 14 0z" fill="#ff9f43" stroke="#d9650a" stroke-width="1.5"/><g stroke="#ff7a3d" stroke-width="2" stroke-linecap="round"><path d="M12 4v2.5M4.5 9l1.6 1.4M19.5 9l-1.6 1.4"/></g><path d="M2.5 16.5h19M6 19.5h12" stroke="#a66f8e" stroke-width="2" stroke-linecap="round"/></svg>`,
+  moon: `<svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z" fill="#f7e98e" stroke="#c9b23c" stroke-width="1.5" stroke-linejoin="round"/><circle cx="17.5" cy="5" r="1.1" fill="#f7e98e"/><circle cx="20.5" cy="8.5" r=".8" fill="#f7e98e"/></svg>`,
+  rainbow: `<svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><path d="M2.5 18a9.5 9.5 0 0 1 19 0" stroke="#ff6b6b"/><path d="M5 18a7 7 0 0 1 14 0" stroke="#ffd23f"/><path d="M7.5 18a4.5 4.5 0 0 1 9 0" stroke="#4dabf7"/><path d="M10 18a2 2 0 0 1 4 0" stroke="#9775fa"/></svg>`,
+  egg: `<svg viewBox="0 0 24 24"><path d="M12 2.5c-4 0-7 6.5-7 11a7 7 0 0 0 14 0c0-4.5-3-11-7-11z" fill="#fdf3e1" stroke="#b9925a" stroke-width="1.6"/><ellipse cx="9.5" cy="10" rx="1.5" ry="2.5" fill="#fff"/></svg>`,
+  cat: `<svg viewBox="0 0 24 24" stroke="#7a4a1e" stroke-width="1.5" stroke-linejoin="round"><path d="M4 9.5L5 3l5 4h4l5-4 1 6.5c1 1.6 1.5 3.3 1.5 5 0 4.4-4.3 7-9.5 7S2.5 18.9 2.5 14.5c0-1.7.5-3.4 1.5-5z" fill="#ffb347"/><circle cx="9" cy="13" r="1.4" fill="#1d1208" stroke="none"/><circle cx="15" cy="13" r="1.4" fill="#1d1208" stroke="none"/><path d="M11 16.2h2l-1 1.2z" fill="#ff7a9a"/><path d="M2 15.5l4-.5M2.5 18l3.5-1.5M22 15.5l-4-.5M21.5 18L18 16.5" stroke-linecap="round"/></svg>`,
+  duck: `<svg viewBox="0 0 24 24" stroke="#b06a00" stroke-width="1.5" stroke-linejoin="round"><path d="M3 14c0 4 3.5 6.5 9 6.5s9-2.5 9-6.5c0-1-1-1.5-2-1-1 .5-2.5.5-3.5-.5a5.5 5.5 0 1 0-9 .5C5 13.5 3 13 3 14z" fill="#ffd83d"/><circle cx="10" cy="7.5" r="1.2" fill="#1d1208" stroke="none"/><path d="M5.2 8.5L1.5 9.5l3.5 1.5z" fill="#ff9a1f" stroke="#9a4a00"/></svg>`,
+  ball: `<svg viewBox="0 0 24 24" stroke="#1d1208" stroke-width="1.5"><circle cx="12" cy="12" r="9.5" fill="#fff"/><path d="M12 7.5l3.6 2.6-1.4 4.2H9.8l-1.4-4.2z" fill="#1d1208"/><path d="M12 2.5v5M15.6 10.1l4.8-1.5M14.2 14.3l3 4M9.8 14.3l-3 4M8.4 10.1L3.6 8.6" fill="none"/></svg>`,
+  zzz: `<svg viewBox="0 0 24 24" ${IC_S} stroke="#5a6aa8"><path d="M3 9h6l-6 7h6M13 4h5l-5 5.5h5M17 14h4l-4 4.5h4"/></svg>`,
+  muscle: `<svg viewBox="0 0 24 24" ${IC_S}><path d="M4 18c2-6 4-10 7-12l2 2-2 3 3 1c2 0 4 2 4 4 0 3-3 4-6 4z" fill="#ffd83d"/></svg>`,
+};
+const ic = (n, cls) => `<span class="ic${cls ? ' ' + cls : ''}" aria-hidden="true">${ICONS[n] || ''}</span>`;
+function hydrateIcons(root) { for (const el of (root || document).querySelectorAll('[data-ic]')) { el.innerHTML = ICONS[el.dataset.ic] || ''; el.classList.add('ic'); el.setAttribute('aria-hidden', 'true'); } }
+
+/* Ícones desenhados no canvas */
+function drawHand(x, y, s = 1) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.rotate(-.25);
+  ctx.fillStyle = '#ffe0bd'; ctx.strokeStyle = '#7a4a1e'; ctx.lineWidth = 2.2; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(-3, 0); ctx.lineTo(-3, -20); ctx.quadraticCurveTo(-3, -25, 1, -25); ctx.quadraticCurveTo(5, -25, 5, -20); ctx.lineTo(5, -6);
+  ctx.quadraticCurveTo(13, -9, 15, -3); ctx.quadraticCurveTo(20, -5, 21, 1); ctx.lineTo(21, 10); ctx.quadraticCurveTo(21, 20, 10, 21);
+  ctx.lineTo(2, 21); ctx.quadraticCurveTo(-5, 21, -8, 14); ctx.lineTo(-12, 5); ctx.quadraticCurveTo(-13, 1, -9, 1); ctx.quadraticCurveTo(-6, 1, -3, 6); ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(10, -4); ctx.lineTo(10, 4); ctx.moveTo(15.5, -2.5); ctx.lineTo(15.5, 5); ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.restore();
+}
+function drawBubbleIcon(kind, x, y) {
+  ctx.save(); ctx.translate(x, y); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  if (kind === 'triple') {
+    for (const a of [-.45, 0, .45]) { ctx.save(); ctx.rotate(a); ctx.strokeStyle = '#5a3410'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(0, 9); ctx.lineTo(0, -6); ctx.stroke();
+      ctx.fillStyle = '#c9d6e4'; ctx.strokeStyle = '#5f7287'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(-3.5, -5); ctx.lineTo(3.5, -5); ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore(); }
+  } else if (kind === 'giant') {
+    ctx.fillStyle = '#ff7ad1'; ctx.strokeStyle = '#8a1f5c'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(10, 0); ctx.lineTo(4, 0); ctx.lineTo(4, 11); ctx.lineTo(-4, 11); ctx.lineTo(-4, 0); ctx.lineTo(-10, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+  } else if (kind === 'magnet') {
+    ctx.lineWidth = 7; ctx.strokeStyle = '#e5533d'; ctx.beginPath(); ctx.arc(0, 0, 7, Math.PI, 0, true); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(-7, -7); ctx.moveTo(7, 0); ctx.lineTo(7, -7); ctx.stroke();
+    ctx.strokeStyle = '#dfe8f2'; ctx.beginPath(); ctx.moveTo(-7, -7); ctx.lineTo(-7, -11); ctx.moveTo(7, -7); ctx.lineTo(7, -11); ctx.stroke();
+  } else if (kind === 'confetti') {
+    ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = '#b8860b'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(-9, 11); ctx.lineTo(-2, -4); ctx.lineTo(5, 3); ctx.closePath(); ctx.fill(); ctx.stroke();
+    for (const [dx, dy, c] of [[4, -9, '#e5533d'], [10, -3, '#3b82f6'], [9, -11, '#22c55e'], [1, -12, '#a855f7']]) { ctx.fillStyle = c; ctx.fillRect(dx - 1.6, dy - 1.6, 3.2, 3.2); }
+  } else {
+    ctx.strokeStyle = '#22a04b'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(8, 0); ctx.moveTo(0, -8); ctx.lineTo(0, 8); ctx.stroke();
+  }
+  ctx.restore();
+}
+function drawLockIcon(c2, x, y, s) {
+  c2.save(); c2.translate(x, y); c2.scale(s, s); c2.fillStyle = '#7a6a50'; c2.strokeStyle = '#7a6a50'; c2.lineWidth = 3; c2.lineCap = 'round';
+  c2.beginPath(); c2.roundRect ? c2.roundRect(-9, -2, 18, 14, 3) : c2.rect(-9, -2, 18, 14); c2.fill();
+  c2.beginPath(); c2.arc(0, -4, 6, Math.PI, 0); c2.lineTo(6, -2); c2.moveTo(-6, -4); c2.lineTo(-6, -2); c2.stroke(); c2.restore();
+}
+
 /* ---------------- Figurinhas ---------------- */
 const STICKERS = [
   ['Zé Vesgo', 'derp'], ['Dona Óculos', 'cool'], ['Lili Dançarina', 'dancer'], ['Mamãe Cocó', 'mama'], ['Soneca', 'sleepy'], ['Pepita de Ouro', 'gold'],
@@ -1042,19 +1135,19 @@ function weaponCanvas(w, open) {
   const cvs = document.createElement('canvas'); cvs.width = 300; cvs.height = 150; const c2 = cvs.getContext('2d');
   const keep = ctx; ctx = c2;
   try { c2.scale(2.4, 2.4); drawSpear(108, 31, 0, open ? 1 : .35, 0, false, w.id); } finally { ctx = keep; }
-  if (!open) { c2.fillStyle = '#7a6a50'; c2.font = '700 40px Fredoka, sans-serif'; c2.textAlign = 'center'; c2.textBaseline = 'middle'; c2.fillText('🔒', 150, 75); }
+  if (!open) drawLockIcon(c2, 150, 75, 2.2);
   return cvs;
 }
 function goWeapons() {
   screen = 'weapons'; show('weaponOv'); $('hud').hidden = true;
   const n = totalStars(), cur = curWeapon(), g = $('wGrid'); g.innerHTML = '';
-  $('wStars').textContent = `Você tem ⭐ ${n} estrelas`;
+  $('wStars').innerHTML = `Você tem ${ic('star')} ${n} estrelas`;
   for (const w of WEAPONS) {
     const open = weaponOpen(w);
     const b = document.createElement('button'); b.type = 'button'; b.className = 'wcard' + (open ? '' : ' lock') + (w.id === cur ? ' on' : '');
     b.appendChild(weaponCanvas(w, open));
     const t = document.createElement('span'); t.textContent = w.name; b.appendChild(t);
-    const sm = document.createElement('small'); sm.textContent = open ? (w.id === cur ? 'Escolhido' : 'Toque para usar') : `Faltam ${w.stars - n} ⭐`; b.appendChild(sm);
+    const sm = document.createElement('small'); sm.innerHTML = open ? (w.id === cur ? 'Escolhido' : 'Toque para usar') : `Faltam ${w.stars - n} ${ic('star')}`; b.appendChild(sm);
     b.onclick = () => { if (!open) { Snd.wrong(); return; } Save.d.weapon = w.id; Save.save(); Snd.launch(w.id, false); Snd.whistleOff(); goWeapons(); };
     g.appendChild(b);
   }
@@ -1077,15 +1170,15 @@ function goLevels() {
   screen = 'levels'; show('levels'); $('hud').hidden = true; Snd.whistleOff();
   const box = $('lvWorlds'); box.innerHTML = '';
   WORLDS.forEach((w, wi) => {
-    const h = document.createElement('h3'); h.textContent = w.icon + ' ' + w.name; box.appendChild(h);
-    if (worldLocked(wi)) { const bd = document.createElement('span'); bd.className = 'lockb'; bd.textContent = '🔒 Jogo completo'; h.appendChild(bd); }
+    const h = document.createElement('h3'); h.innerHTML = ic(w.icon) + ' ' + w.name; box.appendChild(h);
+    if (worldLocked(wi)) { const bd = document.createElement('span'); bd.className = 'lockb'; bd.innerHTML = ic('lock') + ' Jogo completo'; h.appendChild(bd); }
     const gr = document.createElement('div'); gr.className = 'grid'; box.appendChild(gr);
     for (let i = wi * 6; i < wi * 6 + 6 && i < LEVELS.length; i++) {
       const st = Save.d.stars[i] || 0, open = i === 0 || (Save.d.stars[i - 1] || 0) > 0;
       const b = document.createElement('button'); b.className = 'lv w' + wi; b.disabled = !open;
       b.setAttribute('aria-label', 'Fase ' + (i + 1));
-      b.innerHTML = open ? `<span>${i + 1}</span><span class="st">${'★'.repeat(st)}${'☆'.repeat(3 - st)}</span>` : '<span>🔒</span>';
-      if (worldLocked(wi)) { b.disabled = false; b.innerHTML = `<span>${i + 1}</span><span class="st">🔒</span>`; b.onclick = () => { Snd.init(); Snd.click(); openShop(); }; }
+      b.innerHTML = open ? `<span>${i + 1}</span><span class="st">${ic('star').repeat(st)}${ic('starOff').repeat(3 - st)}</span>` : `<span class="lk">${ic('lock')}</span>`;
+      if (worldLocked(wi)) { b.disabled = false; b.innerHTML = `<span>${i + 1}</span><span class="st">${ic('lock')}</span>`; b.onclick = () => { Snd.init(); Snd.click(); openShop(); }; }
       else b.onclick = () => { Snd.init(); Snd.click(); startLevel(i); };
       gr.appendChild(b);
     }
@@ -1128,15 +1221,15 @@ function win() {
   setTimeout(() => {
     if (screen !== 'play') return;
     $('resTitle').textContent = ['Muito bem', 'Incrível', 'Parabéns'][st - 1] + (kidName() ? ', ' + kidName() : '') + '!';
-    $('resEmoji').textContent = L.type === 'word' ? (WORD_EMOJI[L.goal] || '🎉') : (bestCombo >= 3 ? '🔥' : '🐔');
+    $('resEmoji').innerHTML = ''; if (L.type === 'word') $('resEmoji').innerHTML = ic(WORD_ICON[L.goal] || 'star'); else $('resEmoji').appendChild(stickerCanvas(bestCombo >= 3 ? 5 : 2, true, 84));
     $('resMsg').textContent = last ? msg + ' Você terminou todas as fases!' : msg;
-    $('resScore').innerHTML = `Pontos: <b>${score}</b>${bonus ? ` (+${bonus} de bônus)` : ''}<br>${bestCombo >= 2 ? 'Maior combo: x' + bestCombo + ' · ' : ''}${newBest ? '🏆 Novo recorde!' : 'Recorde: ' + Save.d.best[li]}`;
+    $('resScore').innerHTML = `Pontos: <b>${score}</b>${bonus ? ` (+${bonus} de bônus)` : ''}<br>${bestCombo >= 2 ? 'Maior combo: x' + bestCombo + ' · ' : ''}${newBest ? ic('trophy') + ' Novo recorde!' : 'Recorde: ' + Save.d.best[li]}`;
     const spans = $('resStars').children; for (const s of spans) s.classList.remove('on');
     $('resStars').hidden = false; $('bResNext').hidden = false;
     const rs = $('resSticker'); rs.innerHTML = ''; rs.hidden = !newSticker;
-    if (newW) { const t = document.createElement('span'); t.textContent = '🎯 Lançador novo: ' + newW.name + '!'; rs.hidden = false; rs.appendChild(weaponCanvas(newW, true)); rs.lastChild.style.width = '140px'; rs.lastChild.style.height = '70px'; rs.appendChild(t); }
+    if (newW) { const t = document.createElement('span'); t.innerHTML = ic('target') + ' Lançador novo: ' + newW.name + '!'; rs.hidden = false; rs.appendChild(weaponCanvas(newW, true)); rs.lastChild.style.width = '140px'; rs.lastChild.style.height = '70px'; rs.appendChild(t); }
     if (newSticker) { $('resEmoji').textContent = ''; rs.appendChild(stickerCanvas(li, true, 96)); const t = document.createElement('span'); t.textContent = 'Nova figurinha: ' + STICKERS[li][0] + '!'; rs.appendChild(t); }
-    $('bResNext').textContent = last ? 'Fases ▶' : 'Próxima ▶';
+    $('bResNext').innerHTML = (last ? 'Fases ' : 'Próxima ') + ic('next');
     show('result');
     for (let i = 0; i < st; i++) setTimeout(() => { spans[i].classList.add('on'); Snd.ding(i); }, 350 + i * 320);
   }, 1100);
@@ -1147,7 +1240,7 @@ function fail() {
   phase = 'done'; Snd.fail(); Voice.say('fail');
   setTimeout(() => {
     if (screen !== 'play') return;
-    $('resTitle').textContent = 'Quase lá' + (kidName() ? ', ' + kidName() : '') + '!'; $('resEmoji').textContent = '💪'; $('resStars').hidden = true;
+    $('resTitle').textContent = 'Quase lá' + (kidName() ? ', ' + kidName() : '') + '!'; $('resEmoji').innerHTML = ''; $('resEmoji').appendChild(stickerCanvas(0, true, 84)); $('resStars').hidden = true;
     const n = targetsLeft();
     $('resMsg').textContent = 'Faltou ' + n + (n > 1 ? ' galinhas' : ' galinha') + '. Tente de novo!';
     $('resScore').textContent = 'Na próxima tentativa você ganha lanças extras!'; $('bResNext').hidden = true; $('resSticker').hidden = true;
@@ -1369,6 +1462,7 @@ function restActive() { return Save.d.restUntil && Date.now() < Save.d.restUntil
 function goRest() {
   screen = 'rest'; show('restOv'); $('hud').hidden = true; Snd.whistleOff();
   $('restTitle').textContent = 'Hora de descansar' + (kidName() ? ', ' + kidName() : '') + '!';
+  const rp = $('restPic'); rp.innerHTML = ''; rp.appendChild(stickerCanvas(4, true, 120)); rp.insertAdjacentHTML('beforeend', ic('zzz'));
   const m = Math.max(1, Math.ceil((Save.d.restUntil - Date.now()) / 60000));
   $('restLeft').textContent = 'Faltam ' + m + (m > 1 ? ' minutos.' : ' minuto.');
   Voice.say('rest');
@@ -1692,7 +1786,7 @@ function drawBubble(b) {
   ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, y, r, 0, 7); ctx.fill();
   ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 2; ctx.stroke();
   ctx.font = '20px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText({ triple: '🔱', giant: '💪', magnet: '🧲', confetti: '🎉' }[b.kind] || '➕', p.x, y + 1);
+  drawBubbleIcon(b.kind, p.x, y);
   ctx.font = '700 11px Fredoka, sans-serif'; ctx.lineWidth = 3; ctx.strokeStyle = '#2d5f8a'; ctx.fillStyle = '#fff';
   const lab = { triple: 'TRIPLA', giant: 'GIGANTE', magnet: 'ÍMÃ', confetti: 'CONFETE' }[b.kind] || '+1 LANÇA';
   ctx.strokeText(lab, p.x, y + r + 9); ctx.fillText(lab, p.x, y + r + 9);
@@ -2099,7 +2193,7 @@ function drawTip() {
   ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 4; ctx.globalAlpha = 1 - k;
   ctx.beginPath(); ctx.arc(tip.x, tip.y, 14 + k * 26, 0, 7); ctx.stroke();
   ctx.globalAlpha = 1; ctx.font = '40px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('👆', tip.x + 6, tip.y + 26 + Math.sin(T * 8) * 4);
+  drawHand(tip.x + 4, tip.y + 24 + Math.sin(T * 8) * 4, 1);
   ctx.restore();
 }
 function drawHint() {
@@ -2108,7 +2202,7 @@ function drawHint() {
   const e = k < .7 ? k / .7 : 1;
   const x = L0.x + (c.px - L0.x) * .6 * e + 10, y = L0.y + (c.py - L0.y) * .6 * e + 10;
   ctx.save(); ctx.globalAlpha = k < .85 ? 1 : (1 - k) / .15;
-  ctx.font = '44px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('👆', x, y + 20);
+  ctx.font = '44px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; drawHand(x, y + 18, 1.1);
   ctx.font = '700 22px Fredoka, sans-serif'; ctx.lineWidth = 5; ctx.strokeStyle = '#4a2c17'; ctx.fillStyle = '#fff';
   ctx.strokeText('Segure, mire e solte!', 200, 470); ctx.fillText('Segure, mire e solte!', 200, 470);
   ctx.restore();
@@ -2233,7 +2327,7 @@ function loop(now) {
 }
 
 /* ---------------- Botões ---------------- */
-function syncToggles() { $('bMusic').classList.toggle('off', !Save.d.music); $('bSound').classList.toggle('off', !Save.d.sound); $('bSound').textContent = Save.d.sound ? '🔊' : '🔇'; }
+function syncToggles() { $('bMusic').classList.toggle('off', !Save.d.music); $('bSound').classList.toggle('off', !Save.d.sound); $('bSound').innerHTML = ic(Save.d.sound ? 'sound' : 'mute'); }
 function playGreeting() { setTimeout(() => { Voice.say('title'); Voice.name('Oi, ', '! Vamos brincar?'); Voice.chick('c1'); }, 600); }
 $('bPlay').onclick = () => { Snd.init(); Snd.click(); if (!kidName()) { goName('levels'); return; } playGreeting(); goLevels(); };
 $('bName').onclick = () => { Snd.init(); Snd.click(); goName('title'); };
@@ -2288,6 +2382,7 @@ $('bMusic').onclick = () => { Snd.init(); Snd.setMusic(!Save.d.music); syncToggl
 $('bSound').onclick = () => { Snd.init(); Snd.setSound(!Save.d.sound); syncToggles(); Snd.click(); };
 $('bResRetry').onclick = () => { Snd.click(); if (timeUpCheck()) return; show(null); loadLevel(li, true); };
 $('bResNext').onclick = () => { Snd.click(); if (li < LEVELS.length - 1) { if (worldLocked(worldOf(li + 1))) { openShop(); return; } if (timeUpCheck()) return; show(null); loadLevel(li + 1); } else goLevels(); };
+hydrateIcons();
 syncToggles();
 updateTag();
 
