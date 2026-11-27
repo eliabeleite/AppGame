@@ -95,6 +95,7 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
 .namef{display:flex;flex-direction:column;gap:6px;text-align:left}
 .namef label{font-weight:600;font-size:15px}
 .namef label small{font-weight:500;opacity:.7}
+.namef select{font-family:var(--display);font-size:18px;padding:10px 12px;border-radius:14px;border:3px solid var(--cream-dk);background:#fff;color:var(--ink);min-width:0;max-width:100%}
 .namef input{font-family:var(--display);font-size:24px;padding:10px 14px;border-radius:14px;border:3px solid var(--cream-dk);background:#fff;color:var(--ink);min-width:0}
 .namef input:focus{outline:none;border-color:var(--blue)}
 #resSticker{display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:700;color:var(--barn)}
@@ -154,6 +155,8 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
       <input id="kidName" maxlength="20" autocomplete="off" placeholder="Ex.: Ana">
       <label for="kidSay">Como a voz deve falar <small>(opcional, se ela errar)</small></label>
       <input id="kidSay" maxlength="30" autocomplete="off" placeholder="Ex.: Aná">
+      <label for="kidVoice">Voz do nome <small>(teste no 🔊 e escolha a mais parecida)</small></label>
+      <select id="kidVoice"><option value="">Automática</option></select>
       <div class="row">
         <button type="button" class="big alt sm" id="bHear">🔊 Ouvir</button>
         <button type="submit" class="big sm">Pronto ▶</button>
@@ -491,7 +494,7 @@ const PRODUCT_ID = 'jogo_completo';
 
 /* ---------------- Salvamento ---------------- */
 const Save = {
-  k: 'lancapenas.v3', d: { stars: {}, best: {}, music: true, sound: true, kid: '', kidSay: '' },
+  k: 'lancapenas.v3', d: { stars: {}, best: {}, music: true, sound: true, kid: '', kidSay: '', ttsVoice: '' },
   load() { try { const r = localStorage.getItem(this.k); if (r) Object.assign(this.d, JSON.parse(r)); } catch (e) {} },
   save() { try { localStorage.setItem(this.k, JSON.stringify(this.d)); } catch (e) {} }
 };
@@ -677,11 +680,36 @@ document.addEventListener('visibilitychange', () => { if (!Snd.ctx) return; if (
 
 /* ---------------- Voz: arquivos naturais, com voz do aparelho como reserva ---------------- */
 function nativeTTS() { return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TextToSpeech; }
-function speakText(t, cancel) {
+/* Vozes do aparelho em português, das mais parecidas com a narradora (feminina, natural) para as menos */
+const TTS_PITCH = 1.12, TTS_RATE = 1;
+function rankVoice(v) {
+  let r = 0;
+  if (/pt[-_]BR/i.test(v.lang)) r += 50; else if (/^pt/i.test(v.lang)) r += 20;
+  if (/francisca|thalita|luciana|fernanda|vit[oó]ria|maria|camila|leila|raquel|female|feminin|mulher/i.test(v.name)) r += 25;
+  if (/natural|neural|online|premium|enhanced|google/i.test(v.name)) r += 15;
+  if (/daniel|ant[oô]nio|ricardo|felipe|donato|fabio|humberto|male|masculin/i.test(v.name)) r -= 30;
+  return r;
+}
+function ttsVoices() {
   const n = nativeTTS();
-  if (n) { (cancel ? n.stop() : Promise.resolve()).catch(() => {}).then(() => n.speak({ text: t, lang: 'pt-BR', rate: .95, pitch: 1.3, volume: 1 })).catch(() => {}); return; }
+  if (n) return n.getSupportedVoices().then(r => (r.voices || []).map((v, i) => ({ id: String(i), name: v.name || v.voiceURI, lang: v.lang || '' })).filter(v => /^pt/i.test(v.lang)));
+  try { return Promise.resolve(speechSynthesis.getVoices().filter(v => /^pt/i.test(v.lang)).map(v => ({ id: v.voiceURI || v.name, name: v.name, lang: v.lang }))); } catch (e) { return Promise.resolve([]); }
+}
+function speakText(t, cancel, voiceId) {
+  const vid = voiceId !== undefined ? voiceId : Save.d.ttsVoice;
+  const n = nativeTTS();
+  if (n) {
+    const o = { text: t, lang: 'pt-BR', rate: TTS_RATE, pitch: TTS_PITCH, volume: 1 };
+    if (vid !== undefined && vid !== '' && !isNaN(+vid)) o.voice = +vid;
+    (cancel ? n.stop() : Promise.resolve()).catch(() => {}).then(() => n.speak(o)).catch(() => {}); return;
+  }
   if (!('speechSynthesis' in window)) return;
-  try { if (cancel) speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'pt-BR'; if (Voice.v) u.voice = Voice.v; u.rate = .95; u.pitch = 1.3; speechSynthesis.speak(u); } catch (e) {}
+  try {
+    if (cancel) speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(t); u.lang = 'pt-BR';
+    const vs = speechSynthesis.getVoices(), chosen = vid && vs.find(v => (v.voiceURI || v.name) === vid);
+    u.voice = chosen || Voice.v || null; u.rate = TTS_RATE; u.pitch = TTS_PITCH; speechSynthesis.speak(u);
+  } catch (e) {}
 }
 const Voice = {
   bufs: {}, loading: false, srcs: [], endAt: 0, lastChick: 0, tts: 'speechSynthesis' in window || !!nativeTTS(), v: null,
@@ -697,7 +725,7 @@ const Voice = {
     };
     for (let n = 0; n < 6; n++) next();
   },
-  pickTTS() { try { const vs = speechSynthesis.getVoices(); this.v = vs.find(v => /pt[-_]BR/i.test(v.lang)) || vs.find(v => /^pt/i.test(v.lang)) || null; } catch (e) {} },
+  pickTTS() { try { const vs = speechSynthesis.getVoices().filter(v => /^pt/i.test(v.lang)).sort((a, b) => rankVoice(b) - rankVoice(a)); this.v = vs[0] || null; } catch (e) {} },
   say(k, o = {}) {
     if (!Save.d.sound || !LINES[k]) return;
     const c = Snd.ctx, buf = this.bufs[k];
@@ -870,6 +898,12 @@ let nameNext = null;
 function goName(next) {
   nameNext = next; screen = 'name'; show('nameOv'); $('hud').hidden = true;
   $('kidName').value = Save.d.kid || ''; $('kidSay').value = Save.d.kidSay || '';
+  ttsVoices().then(list => {
+    const sel = $('kidVoice'); sel.innerHTML = '<option value="">Automática</option>';
+    list.sort((a, b) => rankVoice(b) - rankVoice(a)).forEach(v => { const o = document.createElement('option'); o.value = v.id; o.textContent = v.name.replace(/^(Microsoft|Google)\s*/i, '').slice(0, 40); sel.appendChild(o); });
+    sel.value = Save.d.ttsVoice || ''; if (sel.value !== (Save.d.ttsVoice || '')) sel.value = '';
+    sel.parentElement && (sel.hidden = list.length === 0);
+  }).catch(() => {});
   setTimeout(() => { try { $('kidName').focus(); } catch (e) {} }, 100);
 }
 let gateAnswer = 0;
@@ -1949,11 +1983,11 @@ $('bPlay').onclick = () => { Snd.init(); Snd.click(); if (!kidName()) { goName('
 $('bName').onclick = () => { Snd.init(); Snd.click(); goName('title'); };
 $('bHear').onclick = () => {
   Snd.init(); const n = ($('kidSay').value || $('kidName').value).trim(); if (!n) return;
-  speakText('Oi, ' + n + '!', true);
+  speakText('Oi, ' + n + '!', true, $('kidVoice').value);
 };
 $('nameForm').addEventListener('submit', e => {
   e.preventDefault(); Snd.init(); Snd.click();
-  Save.d.kid = $('kidName').value.trim().slice(0, 20); Save.d.kidSay = $('kidSay').value.trim().slice(0, 30); Save.save(); updateTag();
+  Save.d.kid = $('kidName').value.trim().slice(0, 20); Save.d.kidSay = $('kidSay').value.trim().slice(0, 30); Save.d.ttsVoice = $('kidVoice').value; Save.save(); updateTag();
   if (nameNext === 'levels') { playGreeting(); goLevels(); } else { if (kidName()) Voice.name('Oi, ', '!'); goTitle(); }
 });
 $('bBackTitle').onclick = () => { Snd.click(); goTitle(); };
