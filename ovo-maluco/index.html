@@ -389,9 +389,21 @@ const Voice = {
     } catch (e) {}
   },
   stop() { for (const s of this.srcs) { try { s.stop(); } catch (e) {} } this.srcs = []; this.endAt = 0; try { speechSynthesis.cancel(); } catch (e) {} },
+  // a narradora ainda está falando? (áudio gravado ou voz do aparelho)
+  busy() { const c = Snd.ctx; if (c && this.endAt - c.currentTime > .05) return true; try { return 'speechSynthesis' in window && (speechSynthesis.speaking || speechSynthesis.pending); } catch (e) { return false; } },
 };
 try { const pv = () => { const vs = speechSynthesis.getVoices().filter(v => /^pt/i.test(v.lang)); Voice.v = vs.find(v => /pt[-_]BR/i.test(v.lang) && /francisca|luciana|female|google|natural/i.test(v.name)) || vs.find(v => /pt[-_]BR/i.test(v.lang)) || vs[0] || null; }; pv(); speechSynthesis.onvoiceschanged = pv; } catch (e) {}
 document.addEventListener('visibilitychange', () => { if (Snd.ctx) document.hidden ? Snd.ctx.suspend() : Snd.ctx.resume(); });
+
+// roda fn só depois de minMs E depois que a narradora terminar (com folga), para nenhuma fala ser cortada
+function afterVoice(fn, minMs = 0, gap = 300) {
+  const t0 = performance.now();
+  const tick = () => {
+    const el = performance.now() - t0;
+    if (el >= minMs && (!Voice.busy() || el > 8000)) setTimeout(fn, gap); else setTimeout(tick, 100);
+  };
+  setTimeout(tick, Math.min(minMs, 100));
+}
 
 /* ---------------- Efeitos (confete e estrelas) ---------------- */
 const fx = $('fx'), fg = fx.getContext('2d'); let parts = [], fxOn = false;
@@ -442,7 +454,7 @@ function drawEgg(g, W, cracks, t, colors, wobble) {
 
 /* ---------------- Estado do jogo ---------------- */
 let screen = 'home', round = null, q = null, busy = false, eggColor = EGG_COLORS[0], wob = 0, hatchTaps = 0, hatchT = 0;
-function show(id) { for (const s of ['home', 'play', 'hatch', 'zooScr', 'gate', 'parents']) $(s).hidden = s !== id; screen = id; }
+function show(id) { if (id !== 'play') clearTimeout(idleT); for (const s of ['home', 'play', 'hatch', 'zooScr', 'gate', 'parents']) $(s).hidden = s !== id; screen = id; }
 
 function unlockedLetters() {
   if (Save.d.mode === 'vogais') return LETRAS.slice(0, 5);
@@ -485,23 +497,35 @@ function nextQuestion() {
   } else
   box.innerHTML = opts.map(o => `<button class="tile" data-l="${o}" aria-label="Letra ${o}">${o}</button>`).join('');
   for (const b of box.children) b.onclick = () => answer(b);
-  speakQ();
+  speakQ(); armIdle();
+}
+let idleT = 0;
+function armIdle(n = 0) {
+  clearTimeout(idleT);
+  if (n >= 2) return;
+  idleT = setTimeout(() => {
+    if (screen !== 'play' || busy || !q) return;
+    if (Voice.busy()) { armIdle(n); return; }
+    speakQ();
+    for (const t of $('opts').children) { t.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.06)' }, { transform: 'scale(1)' }], { duration: 500, delay: 1500 }); }
+    armIdle(n + 1);
+  }, 9000);
 }
 function speakQ() { Voice.say(({ find: 'find_', start: 'start_', pic: 'pic_' })[q.type] + q.L.l); }
 
 function answer(b) {
   if (busy) return;
-  Snd.init();
+  Snd.init(); armIdle();
   const l = b.dataset.l;
   if (l === q.L.l) {
-    busy = true; b.classList.add('ok'); Snd.ok();
+    busy = true; clearTimeout(idleT); b.classList.add('ok'); Snd.ok();
     const s = stat(q.L.l); if (q.tries === 0) { s.ok++; round.ok1++; } else s.err++;
     for (const t of $('opts').children) if (t !== b) t.classList.add('dim');
     const slot = $('slot'); if (slot) { slot.classList.add('fill'); }
     const [x, y] = centerOf(b); burst(x, y, 24, 'star');
     Voice.say('praise' + (1 + Math.floor(Math.random() * 4))); Voice.say('word_' + q.L.l, true);
     round.n++; paintPips(); Save.save();
-    setTimeout(() => { if (screen !== 'play') return; if (round.n >= 5) startHatch(); else nextQuestion(); }, 2300);
+    afterVoice(() => { if (screen !== 'play') return; if (round.n >= 5) startHatch(); else nextQuestion(); }, 1200);
   } else {
     q.tries++; Snd.bad(); b.classList.remove('bad'); void b.offsetWidth; b.classList.add('bad');
     setTimeout(() => b.classList.remove('bad'), 500);
@@ -678,7 +702,7 @@ function goHome() {
 }
 function syncSound() { for (const id of ['bSound', 'bSound2']) $(id).innerHTML = ic(Save.d.sound ? 'sound' : 'mute'); }
 
-$('bPlay').onclick = () => { Snd.init(); Snd.tap(); show('play'); Voice.say('welcome'); setTimeout(() => { if (screen === 'play') newRound(); }, 1800); $('prompt').innerHTML = '<div class="ask">Vamos lá!</div>'; $('opts').innerHTML = ''; round = { n: 0 }; paintPips(); };
+$('bPlay').onclick = () => { Snd.init(); Snd.tap(); show('play'); Voice.say('welcome'); afterVoice(() => { if (screen === 'play') newRound(); }, 600); $('prompt').innerHTML = '<div class="ask">Vamos lá!</div>'; $('opts').innerHTML = ''; round = { n: 0 }; paintPips(); };
 $('bZoo').onclick = () => { Snd.init(); Snd.tap(); goZoo(); };
 $('bZooBack').onclick = () => { Snd.tap(); goHome(); };
 $('vClose').onclick = () => { Snd.tap(); closeViewer(); };
