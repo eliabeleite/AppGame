@@ -365,8 +365,9 @@ function advance(sp, dist, lv, chickens, cb) {
     if (sp.magnet) {
       let best = null, bd = 200;
       for (const c of chickens) {
-        if (c.hit || c.target === false) continue;
+        if (c.hit || c.target === false || sp.homed.has(c)) continue; // não volta para galinha já atravessada (evita girar em volta)
         const p = movedXY(c, sp.t), d = Math.hypot(p.x - sp.x, p.y - sp.y);
+        if (d < 1 || ((p.x - sp.x) * sp.dx + (p.y - sp.y) * sp.dy) / d < .3) continue; // só puxa para o que está à frente
         if (d < bd) { bd = d; best = p; }
       }
       if (best) {
@@ -424,7 +425,7 @@ function advance(sp, dist, lv, chickens, cb) {
       const p = movedXY(c, sp.t), s = c.sz || 1;
       const ex = (sp.x - p.x) / (CH_RX * k * s + TIP), ey = (sp.y - p.y) / (CH_RY * k * s + TIP);
       const inside = ex * ex + ey * ey < 1;
-      if (inside && !sp.inside.has(c)) { sp.inside.add(c); cb && cb('hit', c); }
+      if (inside && !sp.inside.has(c)) { sp.inside.add(c); sp.homed.add(c); cb && cb('hit', c); }
       else if (!inside) sp.inside.delete(c);
     }
     for (const b of lv.bubbles || []) {
@@ -437,7 +438,7 @@ function advance(sp, dist, lv, chickens, cb) {
 }
 
 function newSpear(x, y, ang, t) {
-  return { x, y, dx: Math.cos(ang), dy: Math.sin(ang), b: 0, len: 0, t: t || 0, done: false, inside: new Set(), big: 0, magnet: 0 };
+  return { x, y, dx: Math.cos(ang), dy: Math.sin(ang), b: 0, len: 0, t: t || 0, done: false, inside: new Set(), homed: new Set(), big: 0, magnet: 0 };
 }
 // Ponto de onde sai a próxima lança (onde a anterior parou), um pouco para dentro da arena
 function stickPoint(d) {
@@ -1351,7 +1352,7 @@ function takeBubble(sp, b) {
   if (b.kind === 'triple') {
     Snd.shing(); Voice.say('sp_triple');
     const a = Math.atan2(sp.dy, sp.dx);
-    for (const da of [-.38, .38]) { const n = addSpear(sp.x, sp.y, a + da, sp.t, sp.big, sp.spd); n.b = sp.b; n.len = sp.len; n.inside = new Set(sp.inside); }
+    for (const da of [-.38, .38]) { const n = addSpear(sp.x, sp.y, a + da, sp.t, sp.big, sp.spd); n.b = sp.b; n.len = sp.len; n.inside = new Set(sp.inside); n.homed = new Set(sp.homed); n.magnet = sp.magnet; }
     popText(p.x, p.y - 30, 'TRIPLA!', '#7cf0ff', 34);
   } else if (b.kind === 'giant') {
     sp.big = 1; Snd.giant(); Voice.say('sp_giant'); shake = 6;
@@ -2104,19 +2105,19 @@ function drawTrail(sp) {
 }
 function drawPreview() {
   const L0 = LP(), ang = aimAngle();
-  const sp = newSpear(L0.x, L0.y, ang, T); if (goldenNext) { sp.big = 1; sp.magnet = 1; }
+  const sp = newSpear(L0.x, L0.y, ang, T); sp.spd = SPEED * (1 + 1.4 * charge); if (goldenNext) { sp.big = 1; sp.magnet = 1; }
   const segs = [[{ x: sp.x, y: sp.y }]], bub = [], dots = [], jumps = [];
   let cur = segs[0];
   for (const c of chickens) c.aimed = false;
   const live = chickens.filter(c => !c.hit);
   let guard = 0;
-  while (!sp.done && guard++ < 200) advance(sp, 40, LV, live, (t, d) => {
+  while (!sp.done && guard++ < 400) { advance(sp, sp.magnet ? 12 : 40, LV, live, (t, d) => {
     if (t === 'bounce') { cur.push({ x: d.x, y: d.y }); dots.push(d); }
     if (t === 'stick' || t === 'end') cur.push({ x: d.x, y: d.y });
     if (t === 'portal') { cur.push({ x: d.from.x, y: d.from.y }); jumps.push(d); cur = [{ x: d.to.x, y: d.to.y }]; segs.push(cur); }
     if (t === 'hit') d.aimed = true;
     if (t === 'bubble') bub.push(d);
-  });
+  }); if (sp.magnet && !sp.done) cur.push({ x: sp.x, y: sp.y }); }
   const lp = cur[cur.length - 1];
   if (lp.x !== sp.x || lp.y !== sp.y) cur.push({ x: sp.x, y: sp.y });
   ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
