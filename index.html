@@ -108,6 +108,12 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
 .seg button{flex:1 1 0;min-width:0;border:0;border-radius:12px;padding:10px 6px;font-size:16px;font-weight:700;background:#efe5d0;color:var(--ink);box-shadow:0 3px 0 var(--cream-dk)}
 .seg button.on{background:var(--grass);color:#fff;box-shadow:0 3px 0 #3f8a2c}
 .restz{font-size:60px;margin:4px 0;animation:pulse 2.4s infinite}
+.wgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
+.wcard{border:0;border-radius:16px;background:#fff;box-shadow:0 4px 0 var(--cream-dk);padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:700;font-size:16px;color:var(--ink);min-width:0}
+.wcard canvas{width:100%;max-width:150px;height:auto;aspect-ratio:2}
+.wcard.on{outline:4px solid var(--grass)}
+.wcard.lock{background:#ece4d3;color:#a99c83}
+.wcard small{font-size:13px;font-weight:600}
 .namef{display:flex;flex-direction:column;gap:6px;text-align:left}
 .namef label{font-weight:600;font-size:15px}
 .namef label small{font-weight:500;opacity:.7}
@@ -160,7 +166,7 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
   <div class="card levels-card">
     <h2>Escolha a fase</h2>
     <div id="lvWorlds"></div>
-    <div class="row"><button class="big alt sm" id="bBackTitle">◀ Voltar</button><button class="big alt sm" id="bAlbum2">📒 Álbum</button></div>
+    <div class="row"><button class="big alt sm" id="bBackTitle">◀ Voltar</button><button class="big alt sm" id="bAlbum2">📒 Álbum</button><button class="big alt sm" id="bWeapons">🎯 Lançador</button></div>
   </div>
 </div>
 
@@ -251,6 +257,15 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
   </div>
 </div>
 
+<div id="weaponOv" class="ov dim" hidden>
+  <div class="card levels-card">
+    <h2>Escolha o lançador</h2>
+    <p class="shopm" id="wStars"></p>
+    <div class="wgrid" id="wGrid"></div>
+    <div class="row"><button type="button" class="big sm" id="bWBack">Pronto</button></div>
+  </div>
+</div>
+
 <div id="album" class="ov dim" hidden>
   <div class="card levels-card">
     <h2>Álbum de figurinhas</h2>
@@ -297,7 +312,7 @@ const LINES = /*LINES-START*/{
 "combo2":"Combo!","combo3":"Super combo!","combo4":"Mega combo!","combo5":"Combo galáctico!",
 "sp_triple":"Lança tripla!","sp_giant":"Lança gigante!","sp_extra":"Ganhou uma lança extra!",
 "gold":"Olha a galinha dourada! Ela vale muitos pontos!","helmet":"Essa galinha tem capacete! Precisa acertar duas vezes!","helmet_off":"Plim! Caiu o capacete!",
-"hint":"Arraste o dedo para mirar e solte para lançar!","power":"Segure o dedo mais tempo para a lança ficar super rápida!","super":"Super lançamento!","world4":"Uau! Chegamos ao mundo do arco-íris! Agora é desafio!","say_stick":"A lança fica presa onde bater. Depois você atira de lá!","say_pad":"Só as almofadas azuis fazem a lança quicar!","say_glass":"Quebre o vidro com a lança!","say_portal":"Entre no portal azul e saia no laranja!","say_magnet":"Pegue a bolha do ímã. A lança vai atrás das galinhas!","say_confetti":"A bolha de confete faz a lança explodir em festa!","say_ride":"Acerte a caixa que anda e atire de cima dela!","sp_magnet":"Lança ímã!","sp_confetti":"Lança confete!","streak":"Sequência!","golden":"Ganhou a lança dourada!","trick":"Tabela!","perfect":"Perfeito!","boss":"Cuidado com a galinha rainha! Ela precisa de três lançadas!","intro_BOLA":"Vamos formar a palavra bola!","spell_BOLA":"Bê, ó, éle, á. Bola! Muito bem!","L_B":"Bê!","tip":"Olha a dica! Mire onde está a mãozinha!","help":"Ganhou lanças extras para tentar de novo!","sticker":"Oba! Você ganhou uma figurinha nova!","adult":"Para jogar os outros mundos, chame um adulto!","thanks":"Oba! Agora todos os mundos estão liberados!","rest":"Hora de descansar! As galinhas foram dormir. Até mais tarde!",
+"hint":"Arraste o dedo para mirar e solte para lançar!","power":"Segure o dedo mais tempo para a lança ficar super rápida!","super":"Super lançamento!","world4":"Uau! Chegamos ao mundo do arco-íris! Agora é desafio!","say_stick":"A lança fica presa onde bater. Depois você atira de lá!","say_pad":"Só as almofadas azuis fazem a lança quicar!","say_glass":"Quebre o vidro com a lança!","say_portal":"Entre no portal azul e saia no laranja!","say_magnet":"Pegue a bolha do ímã. A lança vai atrás das galinhas!","say_confetti":"A bolha de confete faz a lança explodir em festa!","say_ride":"Acerte a caixa que anda e atire de cima dela!","sp_magnet":"Lança ímã!","sp_confetti":"Lança confete!","streak":"Sequência!","golden":"Ganhou a lança dourada!","trick":"Tabela!","perfect":"Perfeito!","boss":"Cuidado com a galinha rainha! Ela precisa de três lançadas!","intro_BOLA":"Vamos formar a palavra bola!","spell_BOLA":"Bê, ó, éle, á. Bola! Muito bem!","L_B":"Bê!","tip":"Olha a dica! Mire onde está a mãozinha!","help":"Ganhou lanças extras para tentar de novo!","sticker":"Oba! Você ganhou uma figurinha nova!","adult":"Para jogar os outros mundos, chame um adulto!","thanks":"Oba! Agora todos os mundos estão liberados!","newweapon":"Uau! Você liberou um lançador novo! Escolha no botão do alvo.","rest":"Hora de descansar! As galinhas foram dormir. Até mais tarde!",
 "say_wall":"A caixa está no caminho. Jogue na parede!","say_one":"Uma lança só pode pegar todas!","say_bounce":"O pula-pula azul faz a lança quicar!",
 "say_final":"Última fase! Você consegue!","say_combo":"Acerte as duas com uma lança só!","say_triple":"Acerte a bolha para ganhar uma lança tripla!","say_giant":"Acerte a bolha para a lança ficar gigante!",
 "world1":"Bem-vindo à fazenda!","world2":"Olha que lindo o pôr do sol!","world3":"Ficou de noite! Cuidado com as galinhas dorminhocas!",
@@ -664,6 +679,15 @@ const Snd = {
   portal() { this.tone(300, .35, { to: 1500, vol: .2, vib: 20, vd: 80 }); this.tone(1500, .3, { to: 400, vol: .12, type: 'triangle', when: .15 }); },
   powerFull() { this.tone(880, .12, { type: 'square', vol: .07 }); this.tone(1320, .2, { type: 'square', vol: .07, when: .08 }); },
   superShot() { this.noise(.5, { freq: 300, to: 5000, vol: .5, q: .8 }); this.tone(60, .4, { to: 30, vol: .45 }); this.tone(1200, .3, { type: 'sawtooth', to: 2400, vol: .06, lp: 4000 }); },
+  launch(w, strong) {
+    if (w === 'flecha') { this.tone(220, .3, { type: 'sawtooth', vol: .2, lp: 3500, lpTo: 300 }); this.tone(1200, .08, { type: 'triangle', vol: .1, to: 1800 }); this.noise(.25, { freq: 2500, to: 6000, vol: .3, q: 2 }); }
+    else if (w === 'cenoura') { this.tone(300, .12, { to: 900, vol: .3 }); this.noise(.3, { freq: 600, to: 2000, vol: .3 }); }
+    else if (w === 'machado') { for (let i = 0; i < 4; i++) this.noise(.12, { freq: 500 + i * 120, to: 1400, vol: .35, q: 1.5, when: i * .11 }); this.tone(90, .25, { to: 60, vol: .3 }); }
+    else if (w === 'varinha') { [1568, 1976, 2349, 3136].forEach((f, i) => this.tone(f, .35, { type: 'triangle', vol: .09, when: i * .05 })); this.noise(.35, { freq: 7000, ftype: 'highpass', vol: .12 }); }
+    else { this.twang(); this.whoosh(strong); }
+    if (w !== 'lanca' && strong) this.whoosh(true);
+    this.whistleOn();
+  },
   ricochet() { this.tone(220, .35, { to: 520, vol: .28, vib: 28, vd: 90 }); this.tone(1400, .08, { type: 'square', vol: .04, to: 700 }); },
   ping() { this.tone(1760, .6, { type: 'triangle', vol: .18 }); this.tone(2637, .4, { vol: .08 }); this.tone(300, .2, { to: 600, vol: .2 }); },
   tok() { this.noise(.07, { freq: 1300, q: 6, vol: .5 }); this.tone(240, .12, { to: 130, vol: .35 }); },
@@ -952,7 +976,7 @@ function updateScore(bump) {
 }
 
 /* ---------------- Telas ---------------- */
-function show(id) { for (const s of ['title', 'levels', 'result', 'album', 'nameOv', 'shopOv', 'gateOv', 'parentsOv', 'restOv']) $(s).hidden = s !== id; }
+function show(id) { for (const s of ['title', 'levels', 'result', 'album', 'nameOv', 'shopOv', 'gateOv', 'parentsOv', 'restOv', 'weaponOv']) $(s).hidden = s !== id; }
 function kidName() { return (Save.d.kid || '').trim(); }
 function updateTag() { $('titleTag').textContent = kidName() ? `Oi, ${kidName()}! Mire, lance e veja as galinhas voarem!` : 'Mire, lance e veja as galinhas voarem!'; }
 let nameNext = null;
@@ -1014,6 +1038,27 @@ function stickerCanvas(i, owned, px) {
     c2.fillStyle = '#fff'; c2.font = `700 ${n * .3}px Fredoka, sans-serif`; c2.textAlign = 'center'; c2.textBaseline = 'middle'; c2.fillText('?', n / 2, n / 2); }
   return cvs;
 }
+function weaponCanvas(w, open) {
+  const cvs = document.createElement('canvas'); cvs.width = 300; cvs.height = 150; const c2 = cvs.getContext('2d');
+  const keep = ctx; ctx = c2;
+  try { c2.scale(2.4, 2.4); drawSpear(108, 31, 0, open ? 1 : .35, 0, false, w.id); } finally { ctx = keep; }
+  if (!open) { c2.fillStyle = '#7a6a50'; c2.font = '700 40px Fredoka, sans-serif'; c2.textAlign = 'center'; c2.textBaseline = 'middle'; c2.fillText('🔒', 150, 75); }
+  return cvs;
+}
+function goWeapons() {
+  screen = 'weapons'; show('weaponOv'); $('hud').hidden = true;
+  const n = totalStars(), cur = curWeapon(), g = $('wGrid'); g.innerHTML = '';
+  $('wStars').textContent = `Você tem ⭐ ${n} estrelas`;
+  for (const w of WEAPONS) {
+    const open = weaponOpen(w);
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'wcard' + (open ? '' : ' lock') + (w.id === cur ? ' on' : '');
+    b.appendChild(weaponCanvas(w, open));
+    const t = document.createElement('span'); t.textContent = w.name; b.appendChild(t);
+    const sm = document.createElement('small'); sm.textContent = open ? (w.id === cur ? 'Escolhido' : 'Toque para usar') : `Faltam ${w.stars - n} ⭐`; b.appendChild(sm);
+    b.onclick = () => { if (!open) { Snd.wrong(); return; } Save.d.weapon = w.id; Save.save(); Snd.launch(w.id, false); Snd.whistleOff(); goWeapons(); };
+    g.appendChild(b);
+  }
+}
 function goAlbum() {
   screen = 'album'; show('album'); $('hud').hidden = true;
   const g = $('albGrid'); g.innerHTML = ''; let got = 0;
@@ -1065,6 +1110,7 @@ function win() {
   score += bonus; updateScore(true);
   if (perfect) { Voice.say('perfect', { queue: true }); popText(200, 300, 'PERFEITO! +1000', '#ffd23f', 34); }
   const newSticker = !((Save.d.stars[li] || 0) > 0);
+  const starsBefore = totalStars();
   if ((Save.d.stars[li] || 0) < st) Save.d.stars[li] = st;
   const newBest = score > (Save.d.best[li] || 0);
   if (newBest) Save.d.best[li] = score;
@@ -1075,7 +1121,9 @@ function win() {
   if (L.type === 'word') { msg = 'Você formou ' + L.goal + '!'; Voice.say('spell_' + L.goal, { queue: true }); }
   else { const n = targetsTotal(); msg = n > 1 ? `${n} galinhas voaram!` : '1 galinha voou!'; Voice.say('f' + Math.min(8, n), { queue: true }); Voice.say('praise' + st, { queue: true }); }
   Voice.name('', '!');
+  const newW = WEAPONS.find(w => w.stars > starsBefore && w.stars <= totalStars());
   if (newSticker) Voice.say('sticker', { queue: true });
+  if (newW) Voice.say('newweapon', { queue: true });
   if (last) Voice.say('end', { queue: true });
   setTimeout(() => {
     if (screen !== 'play') return;
@@ -1086,6 +1134,7 @@ function win() {
     const spans = $('resStars').children; for (const s of spans) s.classList.remove('on');
     $('resStars').hidden = false; $('bResNext').hidden = false;
     const rs = $('resSticker'); rs.innerHTML = ''; rs.hidden = !newSticker;
+    if (newW) { const t = document.createElement('span'); t.textContent = '🎯 Lançador novo: ' + newW.name + '!'; rs.hidden = false; rs.appendChild(weaponCanvas(newW, true)); rs.lastChild.style.width = '140px'; rs.lastChild.style.height = '70px'; rs.appendChild(t); }
     if (newSticker) { $('resEmoji').textContent = ''; rs.appendChild(stickerCanvas(li, true, 96)); const t = document.createElement('span'); t.textContent = 'Nova figurinha: ' + STICKERS[li][0] + '!'; rs.appendChild(t); }
     $('bResNext').textContent = last ? 'Fases ▶' : 'Próxima ▶';
     show('result');
@@ -1144,7 +1193,7 @@ function fire() {
   if (goldenNext) { main.big = 1; main.magnet = 1; main.golden = 1; goldenNext = false; Snd.giant(); }
   launchSpear = null;
   spearsLeft--; used++; phase = 'flying'; comboN = 0; throwHits = 0;
-  Snd.twang(); Snd.whoosh(charge > .6); Snd.whistleOn(); updateGoal();
+  Snd.launch(curWeapon(), charge > .6); updateGoal();
   if (charge >= 1) {
     Snd.superShot(); shake = 9; flash = .3; Voice.say('super');
     popText(L0.x, L0.y - 70, 'SUPER!', '#ff7a3d', 40);
@@ -1163,6 +1212,10 @@ function onSpear(sp, type, d) {
     popText(d.x + (d.x < 200 ? 30 : -30), d.y, pick(['BOING!', 'TOING!', 'PLIM!']), '#9fd3ff', 20);
   } else if (type === 'stick') {
     if (d.block) Snd.tok(); else Snd.thud();
+    const wpn = curWeapon();
+    if (wpn === 'machado') popText(d.x, d.y - 26, 'TUNC!', '#dfe8f2', 24);
+    else if (wpn === 'varinha') burst(d.x, d.y, 10, 'star');
+    else if (wpn === 'cenoura') popText(d.x, d.y - 26, 'NHAC!', '#ffb35c', 22);
     Snd.boiing();
     burst(d.x, d.y, 10, 'dust'); shake = Math.max(shake, sp.big ? 8 : 3);
     const s = { x: d.x, y: d.y, ang: Math.atan2(sp.dy, sp.dx), wob: 1, block: d.block || null, big: sp.big };
@@ -1261,6 +1314,8 @@ function hitChicken(sp, c) {
   rings.push({ x: c.px, y: c.py, r: 14, age: 0, life: .45, col: '#ffd23f' });
   popText(c.px + 34, c.py + 10, '+' + pts, '#ffffff', 22);
   comic(c.px - 10, c.py - 40);
+  if (curWeapon() === 'cenoura') popText(c.px + 30, c.py - 30, 'CROC!', '#ff8a1f', 24);
+  if (curWeapon() === 'varinha') burst(c.px, c.py, 12, 'star');
   if (c.kind === 'gold') { burst(c.px, c.py, 18, 'coin'); for (let i = 0; i < 4; i++) Snd.coin(i); }
   if (Math.random() < .4 || c.kind === 'mama') eggs.push({ x: c.px, y: c.py + 10, vy: -60, vx: rnd(-30, 30), rot: 0, gold: c.kind === 'gold' });
   if (L.type === 'word') {
@@ -1837,23 +1892,121 @@ function drawEgg(e) {
 }
 
 /* ---------------- Lança ---------------- */
-function drawSpear(x, y, ang, a = 1, big = 0) {
+/* ---------------- Lançadores (só muda o visual, o som e o rastro; a física é a mesma) ---------------- */
+const WEAPONS = [
+  { id: 'lanca', name: 'Lança', stars: 0 },
+  { id: 'flecha', name: 'Flecha', stars: 6 },
+  { id: 'cenoura', name: 'Cenoura', stars: 15 },
+  { id: 'machado', name: 'Machadinho', stars: 25 },
+  { id: 'varinha', name: 'Varinha mágica', stars: 40 },
+];
+const totalStars = () => Object.values(Save.d.stars || {}).reduce((a, b) => a + (b || 0), 0);
+const weaponOpen = w => totalStars() >= w.stars;
+function curWeapon() { const w = WEAPONS.find(x => x.id === Save.d.weapon); return w && weaponOpen(w) ? w.id : 'lanca'; }
+// fly: true enquanto voa (machadinho gira, varinha brilha)
+function drawSpear(x, y, ang, a = 1, big = 0, fly = false, wid) {
+  const w = wid || curWeapon();
   ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y); ctx.rotate(ang);
   if (big) ctx.scale(1.8, 1.8);
-  ctx.lineCap = 'round';
-  ctx.strokeStyle = '#5a3410'; ctx.lineWidth = 7.5; ctx.beginPath(); ctx.moveTo(-16, 0); ctx.lineTo(-70, 0); ctx.stroke();
-  const sg = ctx.createLinearGradient(0, -3, 0, 3); sg.addColorStop(0, '#e0a060'); sg.addColorStop(1, '#9a5e2a');
-  ctx.strokeStyle = sg; ctx.lineWidth = 4.5; ctx.stroke();
-  ctx.fillStyle = '#e5533d'; ctx.strokeStyle = '#5a3410'; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.moveTo(-60, 0); ctx.lineTo(-78, -10); ctx.lineTo(-72, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.moveTo(-60, 0); ctx.lineTo(-78, 10); ctx.lineTo(-72, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
-  ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.moveTo(-64, 0); ctx.lineTo(-80, 0); ctx.lineTo(-74, 3); ctx.closePath(); ctx.fill();
-  ctx.fillStyle = '#e5533d'; ctx.fillRect(-22, -4, 7, 8); ctx.fillStyle = '#fff'; ctx.fillRect(-20, -4, 2, 8);
-  const tg = ctx.createLinearGradient(0, -8, 0, 8); tg.addColorStop(0, '#ffffff'); tg.addColorStop(.5, '#c9d6e4'); tg.addColorStop(1, '#8a9bb0');
-  ctx.beginPath(); ctx.moveTo(4, 0); ctx.quadraticCurveTo(-7, -9, -18, -4); ctx.lineTo(-18, 4); ctx.quadraticCurveTo(-7, 9, 4, 0);
-  ctx.fillStyle = tg; ctx.fill(); ctx.strokeStyle = '#5f7287'; ctx.lineWidth = 2; ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(1, 0); ctx.lineTo(-16, 0); ctx.strokeStyle = 'rgba(95,114,135,.5)'; ctx.lineWidth = 1; ctx.stroke();
+  ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  const O = '#5a3410';
+  if (w === 'flecha') {
+    ctx.strokeStyle = O; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(-72, 0); ctx.stroke();
+    ctx.strokeStyle = '#d9a066'; ctx.lineWidth = 3; ctx.stroke();
+    const fl = fly ? Math.sin(T * 40) * 1.5 : 0;
+    for (const [dy, col] of [[-1, '#e5533d'], [1, '#ffffff']]) {
+      ctx.fillStyle = col; ctx.strokeStyle = O; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.moveTo(-54, 0); ctx.quadraticCurveTo(-62, dy * (9 + fl), -76, dy * (11 + fl)); ctx.lineTo(-70, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+    }
+    ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.moveTo(-56, 0); ctx.lineTo(-72, -2); ctx.lineTo(-72, 2); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#e5533d'; ctx.fillRect(-76, -2.5, 4, 5);
+    const g = ctx.createLinearGradient(0, -6, 0, 6); g.addColorStop(0, '#fff'); g.addColorStop(.5, '#c9d6e4'); g.addColorStop(1, '#7d8fa5');
+    ctx.fillStyle = g; ctx.strokeStyle = '#5f7287'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(4, 0); ctx.lineTo(-12, -6.5); ctx.lineTo(-9, 0); ctx.lineTo(-12, 6.5); ctx.closePath(); ctx.fill(); ctx.stroke();
+  } else if (w === 'cenoura') {
+    const wav = Math.sin(T * (fly ? 30 : 4)) * (fly ? .35 : .12);
+    for (const [r, col] of [[-.5, '#3fae3a'], [0, '#5fcf4a'], [.5, '#3fae3a']]) {
+      ctx.save(); ctx.translate(-50, 0); ctx.rotate(Math.PI + r + wav);
+      ctx.fillStyle = col; ctx.strokeStyle = '#2a6b25'; ctx.lineWidth = 1.2;
+      ctx.beginPath(); ctx.ellipse(12, 0, 13, 4, 0, 0, 7); ctx.fill(); ctx.stroke(); ctx.restore();
+    }
+    const g = ctx.createLinearGradient(0, -9, 0, 9); g.addColorStop(0, '#ffb35c'); g.addColorStop(.5, '#ff8a1f'); g.addColorStop(1, '#d9650a');
+    ctx.fillStyle = g; ctx.strokeStyle = '#a34a00'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(4, 0); ctx.quadraticCurveTo(-20, -11, -52, -9); ctx.quadraticCurveTo(-56, 0, -52, 9); ctx.quadraticCurveTo(-20, 11, 4, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = 'rgba(163,74,0,.6)'; ctx.lineWidth = 1.4;
+    for (const xx of [-14, -26, -38]) { ctx.beginPath(); ctx.moveTo(xx, -5); ctx.lineTo(xx - 3, -1); ctx.moveTo(xx - 4, 3); ctx.lineTo(xx - 7, 6); ctx.stroke(); }
+    ctx.fillStyle = 'rgba(255,255,255,.45)'; ctx.beginPath(); ctx.ellipse(-24, -5, 14, 1.8, -.05, 0, 7); ctx.fill();
+    if (!fly) { ctx.fillStyle = '#1d1208'; ctx.beginPath(); ctx.arc(-38, -2, 1.6, 0, 7); ctx.arc(-38, 3, 1.6, 0, 7); ctx.fill(); }
+  } else if (w === 'machado') {
+    // voando: gira em torno do meio; parado: lâmina cravada na ponta
+    if (fly) { ctx.translate(-34, 0); ctx.rotate(T * 22); ctx.translate(34, 0); }
+    ctx.strokeStyle = O; ctx.lineWidth = 8; ctx.beginPath(); ctx.moveTo(-8, 0); ctx.lineTo(-66, 0); ctx.stroke();
+    const hg = ctx.createLinearGradient(0, -3, 0, 3); hg.addColorStop(0, '#e8b06a'); hg.addColorStop(1, '#a8682c');
+    ctx.strokeStyle = hg; ctx.lineWidth = 5; ctx.stroke();
+    ctx.strokeStyle = '#e5533d'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(-50, 0); ctx.lineTo(-62, 0); ctx.stroke();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; for (const xx of [-52, -56, -60]) { ctx.beginPath(); ctx.moveTo(xx, -3); ctx.lineTo(xx - 2, 3); ctx.stroke(); }
+    const bg = ctx.createLinearGradient(0, -22, 0, 8); bg.addColorStop(0, '#ffffff'); bg.addColorStop(.45, '#c7d3e2'); bg.addColorStop(1, '#7a8ca3');
+    ctx.fillStyle = bg; ctx.strokeStyle = '#4e6078'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(-6, -4); ctx.lineTo(-18, -4); ctx.quadraticCurveTo(-24, -16, -16, -26); ctx.quadraticCurveTo(2, -26, 6, -10); ctx.quadraticCurveTo(4, -2, -6, -4); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#6b7d95'; rr(ctx, -20, -6, 16, 12, 3); ctx.fill(); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-14, -20); ctx.quadraticCurveTo(-2, -21, 2, -11); ctx.stroke();
+  } else if (w === 'varinha') {
+    ctx.strokeStyle = '#3b2a6b'; ctx.lineWidth = 7; ctx.beginPath(); ctx.moveTo(-14, 0); ctx.lineTo(-70, 0); ctx.stroke();
+    for (let i = 0; i < 7; i++) { ctx.strokeStyle = i % 2 ? '#ffffff' : '#a855f7'; ctx.lineWidth = 4.5; ctx.beginPath(); ctx.moveTo(-14 - i * 8, 0); ctx.lineTo(-22 - i * 8, 0); ctx.stroke(); }
+    const s = 1 + Math.sin(T * 10) * .08;
+    const gl = ctx.createRadialGradient(-4, 0, 2, -4, 0, 24); gl.addColorStop(0, 'rgba(255,240,150,.9)'); gl.addColorStop(1, 'rgba(255,240,150,0)');
+    ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(-4, 0, 24, 0, 7); ctx.fill();
+    ctx.save(); ctx.translate(-4, 0); ctx.rotate(T * (fly ? 8 : 1.5)); ctx.scale(s, s);
+    shapePath('star', 0, 0, 13); ctx.fillStyle = '#ffd23f'; ctx.fill(); ctx.strokeStyle = '#b8860b'; ctx.lineWidth = 2; ctx.stroke();
+    shapePath('star', -1.5, -1.5, 5); ctx.fillStyle = '#fff8c4'; ctx.fill(); ctx.restore();
+  } else {
+    // lança (padrão)
+    ctx.strokeStyle = O; ctx.lineWidth = 7.5; ctx.beginPath(); ctx.moveTo(-16, 0); ctx.lineTo(-70, 0); ctx.stroke();
+    const sg = ctx.createLinearGradient(0, -3, 0, 3); sg.addColorStop(0, '#e8b06a'); sg.addColorStop(1, '#9a5e2a');
+    ctx.strokeStyle = sg; ctx.lineWidth = 4.5; ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(-20, -1.2); ctx.lineTo(-66, -1.2); ctx.stroke();
+    const rib = Math.sin(T * (fly ? 36 : 5)) * (fly ? 5 : 2);
+    ctx.strokeStyle = '#e5533d'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(-20, 0); ctx.quadraticCurveTo(-28, 6 + rib, -38, 4 - rib); ctx.stroke();
+    ctx.strokeStyle = '#ffd23f'; ctx.beginPath(); ctx.moveTo(-20, 0); ctx.quadraticCurveTo(-27, -6 - rib, -36, -3 + rib); ctx.stroke();
+    ctx.fillStyle = '#e5533d'; ctx.strokeStyle = O; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(-60, 0); ctx.lineTo(-78, -10); ctx.lineTo(-72, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.moveTo(-60, 0); ctx.lineTo(-78, 10); ctx.lineTo(-72, 0); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.moveTo(-64, 0); ctx.lineTo(-80, 0); ctx.lineTo(-74, 3); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#e5533d'; ctx.fillRect(-22, -4.5, 7, 9); ctx.fillStyle = '#fff'; ctx.fillRect(-20, -4.5, 2, 9);
+    const tg = ctx.createLinearGradient(0, -8, 0, 8); tg.addColorStop(0, '#ffffff'); tg.addColorStop(.5, '#c9d6e4'); tg.addColorStop(1, '#8a9bb0');
+    ctx.beginPath(); ctx.moveTo(4, 0); ctx.quadraticCurveTo(-7, -9, -18, -4); ctx.lineTo(-18, 4); ctx.quadraticCurveTo(-7, 9, 4, 0);
+    ctx.fillStyle = tg; ctx.fill(); ctx.strokeStyle = '#5f7287'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(1, 0); ctx.lineTo(-16, 0); ctx.strokeStyle = 'rgba(95,114,135,.5)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.9)'; ctx.beginPath(); ctx.ellipse(-8, -3, 4, 1.2, -.3, 0, 7); ctx.fill();
+  }
   ctx.restore();
+}
+// rastro de cada lançador
+function drawTrail(sp) {
+  const w = curWeapon(), tr = sp.trail;
+  ctx.save(); ctx.lineCap = 'round';
+  for (let i = 1; i < tr.length; i++) {
+    const k = i / tr.length;
+    ctx.globalAlpha = k * .6;
+    let col = '#fff', lw = 6 * k;
+    if (sp.big) { col = `hsl(${(T * 400 + i * 30) % 360},90%,65%)`; lw = 14 * k; }
+    else if (sp.spd > SPEED * 1.8) col = i % 2 ? '#ffd23f' : '#ff7a3d';
+    else if (w === 'flecha') lw = 3 * k;
+    else if (w === 'cenoura') col = i % 2 ? '#ffb35c' : '#8fe07a';
+    else if (w === 'machado') { col = '#dfe8f2'; lw = 4 * k; }
+    else if (w === 'varinha') { col = `hsl(${(i * 40 + T * 300) % 360},95%,70%)`; lw = 8 * k; }
+    ctx.strokeStyle = col; ctx.lineWidth = lw;
+    ctx.beginPath(); ctx.moveTo(tr[i - 1].x, tr[i - 1].y); ctx.lineTo(tr[i].x, tr[i].y); ctx.stroke();
+  }
+  ctx.restore();
+  if (w === 'machado' && !sp.big) {
+    const cx = sp.x - sp.dx * 34, cy = sp.y - sp.dy * 34;
+    ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,.55)'; ctx.lineWidth = 3;
+    for (let i = 0; i < 2; i++) { const a0 = T * 22 + i * Math.PI; ctx.beginPath(); ctx.arc(cx, cy, 38, a0, a0 + 1.1); ctx.stroke(); }
+    ctx.restore();
+  }
+  if (w === 'varinha' && Math.random() < .6) parts.push({ kind: 'star', x: sp.x + rnd(-6, 6), y: sp.y + rnd(-6, 6), vx: rnd(-30, 30), vy: rnd(-30, 30), life: .6, age: 0, rot: 0, vr: 3, ph: 0, r: rnd(2, 4), col: pick(['#ffd23f', '#ff9ec7', '#a7e3ff', '#c7a2ff']) });
+  if (w === 'cenoura' && Math.random() < .25) parts.push({ kind: 'feather', x: sp.x, y: sp.y, vx: rnd(-20, 20), vy: rnd(-10, 20), life: .7, age: 0, rot: rnd(0, 6), vr: rnd(-6, 6), ph: 0, r: 3, col: '#8fe07a' });
 }
 function drawPreview() {
   const L0 = LP(), ang = aimAngle();
@@ -2048,17 +2201,9 @@ function draw() {
   drawLauncher();
   for (const sp of spears) {
     if (sp.done) continue;
-    ctx.save(); ctx.lineCap = 'round';
-    const tr = sp.trail;
-    for (let i = 1; i < tr.length; i++) {
-      ctx.globalAlpha = i / tr.length * .6;
-      ctx.strokeStyle = sp.big ? `hsl(${(T * 400 + i * 30) % 360},90%,65%)` : sp.spd > SPEED * 1.8 ? (i % 2 ? '#ffd23f' : '#ff7a3d') : '#fff';
-      ctx.lineWidth = (sp.big ? 14 : 6) * i / tr.length;
-      ctx.beginPath(); ctx.moveTo(tr[i - 1].x, tr[i - 1].y); ctx.lineTo(tr[i].x, tr[i].y); ctx.stroke();
-    }
-    ctx.restore();
+    drawTrail(sp);
     if (sp.golden || sp.magnet) { ctx.save(); ctx.globalAlpha = .5 + .3 * Math.sin(T * 20); ctx.fillStyle = sp.golden ? '#ffd23f' : '#ff7ad1'; ctx.beginPath(); ctx.arc(sp.x, sp.y, sp.big ? 26 : 16, 0, 7); ctx.fill(); ctx.restore(); }
-    drawSpear(sp.x, sp.y, Math.atan2(sp.dy, sp.dx), 1, sp.big);
+    drawSpear(sp.x, sp.y, Math.atan2(sp.dy, sp.dx), 1, sp.big, true);
   }
   ctx.restore();
   drawFrame();
@@ -2106,6 +2251,8 @@ $('bBackTitle').onclick = () => { Snd.click(); goTitle(); };
 $('bAlbum').onclick = () => { Snd.init(); Snd.click(); goAlbum(); };
 $('bAlbum2').onclick = () => { Snd.click(); goAlbum(); };
 $('bAlbBack').onclick = () => { Snd.click(); goLevels(); };
+$('bWeapons').onclick = () => { Snd.init(); Snd.click(); goWeapons(); };
+$('bWBack').onclick = () => { Snd.click(); goLevels(); };
 $('bTip').onclick = () => { Snd.init(); showTip(); };
 $('bShopBuy').onclick = () => { Snd.click(); openGate('buy'); };
 $('bShopRestore').onclick = () => { Snd.click(); openGate('restore'); };
