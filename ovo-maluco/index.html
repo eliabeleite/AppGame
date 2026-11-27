@@ -63,6 +63,9 @@ h2{margin:0;font-size:28px;text-align:center}
 .opts.four{grid-template-columns:repeat(2,1fr)}
 .tile{aspect-ratio:1/1;border:0;border-radius:26px;background:#fff;font-size:clamp(56px,17vw,96px);font-weight:700;box-shadow:0 8px 0 var(--cream-dk);display:grid;place-items:center;line-height:1;max-height:170px;width:100%;transition:transform .1s}
 .opts.four .tile{aspect-ratio:1.5/1}
+.tile.pict{padding:10%}
+.tile.pict svg{width:100%;height:100%}
+.bigl{font-size:clamp(80px,26vw,130px);font-weight:700;line-height:1;color:var(--orange);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;animation:pop .45s}
 .tile:active{transform:translateY(4px)}
 .tile.ok{background:var(--ok);color:#fff;box-shadow:0 8px 0 var(--ok-dk);animation:pop .45s}
 .tile.bad{background:var(--bad);color:#fff;animation:shake .45s}
@@ -72,7 +75,7 @@ h2{margin:0;font-size:28px;text-align:center}
 #hatch{background:rgba(40,30,80,.55);justify-content:center}
 #hatchCv{width:min(80vw,340px);height:min(80vw,340px);touch-action:none;cursor:pointer}
 .hatch-say{color:#fff;font-size:28px;font-weight:700;text-shadow:0 3px 0 rgba(0,0,0,.35);text-align:center}
-#bornImg{width:min(72vw,300px);height:auto;animation:born .7s cubic-bezier(.2,1.6,.4,1)}
+#bornImg{animation:born .7s cubic-bezier(.2,1.6,.4,1);transition:opacity .4s}
 .born-name{font-size:clamp(28px,8vw,38px);font-weight:700;color:#fff;-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-align:center}
 /* zoológico */
 .zoo{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}
@@ -113,6 +116,11 @@ h2{margin:0;font-size:28px;text-align:center}
 .ccard img{width:100%;aspect-ratio:1;object-fit:contain}
 .ccard button{border:0;background:var(--bad);color:#fff;border-radius:10px;padding:4px 8px;font-size:12px;font-weight:700}
 .small{font-size:13px;opacity:.75;font-weight:500}
+.rep{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.rl{border-radius:12px;padding:6px 2px;text-align:center;font-weight:700;font-size:22px;line-height:1;color:#fff}
+.rl small{display:block;font-size:10px;font-weight:600;margin-top:2px;opacity:.95;font-variant-numeric:tabular-nums}
+.rl.ok,.lg.ok{background:var(--ok)} .rl.mid,.lg.mid{background:var(--sun);color:var(--ink)} .rl.bad,.lg.bad{background:var(--bad)} .rl.new,.lg.new{background:#d9ccb2;color:#8a7a5e}
+.lg{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-1px}
 #fx{position:fixed;inset:0;pointer-events:none;z-index:50;width:100%;height:100%}
 @keyframes pop{0%{transform:scale(.5)}70%{transform:scale(1.12)}100%{transform:scale(1)}}
 @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}40%{transform:translateX(10px)}60%{transform:translateX(-7px)}80%{transform:translateX(7px)}}
@@ -154,7 +162,7 @@ h2{margin:0;font-size:28px;text-align:center}
     </div>
     <div id="bornStage" hidden style="display:flex;flex-direction:column;align-items:center;gap:12px">
       <p class="hatch-say">Nasceu!</p>
-      <img id="bornImg" alt="">
+      <div id="bornBox" style="position:relative;width:min(80vw,340px);height:min(80vw,340px);touch-action:none"><img id="bornImg" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:contain"><canvas id="bornCv" style="position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .4s"></canvas></div>
       <p class="born-name" id="bornName"></p>
       <div class="row"><button class="big alt sm" id="bSeeZoo"><i data-ic="zoo"></i> Zoológico</button><button class="big sm" id="bAgain">Mais ovos <i data-ic="next"></i></button></div>
     </div>
@@ -193,10 +201,15 @@ h2{margin:0;font-size:28px;text-align:center}
       <label for="cName" style="margin-top:8px">Adicionar criatura</label>
       <p class="small">Escolha uma imagem do celular e dê um nome. Ela entra nos ovos como recompensa. Fica só neste aparelho.</p>
       <input id="cName" maxlength="30" placeholder="Nome da criatura" autocomplete="off">
-      <input id="cFile" type="file" accept="image/*">
+      <input id="cFile" type="file" accept="image/*" hidden>
+      <button type="button" class="big alt sm" id="bPickC">Escolher imagem</button>
+      <p class="small" id="cFileName">Nenhuma imagem escolhida.</p>
       <button type="button" class="big sm" id="bAddC">Adicionar</button>
       <p class="msg" id="cMsg"></p>
       <div class="clist" id="cList"></div>
+      <label style="margin-top:8px">Como vão as letras</label>
+      <div class="rep" id="rep"></div>
+      <p class="small"><span class="lg ok"></span> aprendida &nbsp; <span class="lg mid"></span> praticando &nbsp; <span class="lg bad"></span> com dificuldade &nbsp; <span class="lg new"></span> ainda não vista</p>
       <div class="row" style="margin-top:10px"><button type="button" class="big alt sm" id="bReset">Apagar progresso</button><button type="button" class="big sm" id="bPBack">Pronto</button></div>
       <p class="msg" id="pMsg"></p>
     </div>
@@ -248,7 +261,7 @@ const LINES = /*LINES-START*/{
 "praise1":"Muito bem!","praise2":"Isso mesmo!","praise3":"Acertou!","praise4":"Uau, que esperto!",
 "try1":"Tente de novo!","try2":"Quase! Tente outra vez!","hint":"Olha, é esta aqui!",
 "ovo_racha":"O ovo está rachando!","ready":"O ovo vai chocar! Toque nele!","born":"Nasceu!",
-"zoo":"Bem-vindo ao zoológico maluco!","newletters":"Oba! Letras novas para aprender!","all":"Você encontrou todas as criaturas!",
+"zoo":"Bem-vindo ao zoológico maluco!","pic_A":"Qual figura começa com á?","pic_E":"Qual figura começa com é?","pic_I":"Qual figura começa com i?","pic_O":"Qual figura começa com ó?","pic_U":"Qual figura começa com u?","pic_P":"Qual figura começa com pê?","pic_B":"Qual figura começa com bê?","pic_M":"Qual figura começa com ême?","pic_T":"Qual figura começa com tê?","pic_D":"Qual figura começa com dê?","pic_S":"Qual figura começa com ésse?","pic_L":"Qual figura começa com éle?","pic_N":"Qual figura começa com êne?","pic_F":"Qual figura começa com éfe?","pic_V":"Qual figura começa com vê?","newletters":"Oba! Letras novas para aprender!","all":"Você encontrou todas as criaturas!",
 "find_A":"Cadê a letra á?","find_E":"Cadê a letra é?","find_I":"Cadê a letra i?","find_O":"Cadê a letra ó?","find_U":"Cadê a letra u?",
 "find_P":"Cadê a letra pê?","find_B":"Cadê a letra bê?","find_M":"Cadê a letra ême?","find_T":"Cadê a letra tê?","find_D":"Cadê a letra dê?",
 "find_S":"Cadê a letra ésse?","find_L":"Cadê a letra éle?","find_N":"Cadê a letra êne?","find_F":"Cadê a letra éfe?","find_V":"Cadê a letra vê?",
@@ -451,7 +464,7 @@ function paintPips() { $('pips').innerHTML = Array.from({ length: 5 }, (_, i) =>
 function nextQuestion() {
   busy = false;
   const L = chooseLetter(round.prev); round.prev = L.l; stat(L.l).seen++;
-  const type = Math.random() < .5 ? 'find' : 'start';
+  const type = pick(['find', 'start', 'pic']);
   const pool = unlockedLetters().length >= 4 ? unlockedLetters() : LETRAS.slice(0, 5);
   const nOpt = unlockedLetters().length > 5 ? 4 : 3;
   const opts = [L.l]; while (opts.length < nOpt) { const o = pick(pool).l; if (!opts.includes(o)) opts.push(o); }
@@ -463,13 +476,18 @@ function nextQuestion() {
     const w = L.palavra.toUpperCase();
     p.innerHTML = `<div class="pic">${PICS[L.palavra] || ''}</div><div class="word"><span class="slot" id="slot">${w[0]}</span>${w.slice(1)}</div><button class="hear" id="bHear" aria-label="Ouvir de novo">${ic('speaker')}</button>`;
   }
+  if (type === 'pic') p.innerHTML = `<div class="ask">Qual figura começa com</div><div class="bigl">${L.l}</div><button class="hear" id="bHear" aria-label="Ouvir de novo">${ic('speaker')}</button>`;
   $('bHear').onclick = () => { Snd.tap(); speakQ(); };
-  const box = $('opts'); box.className = 'opts' + (nOpt === 4 ? ' four' : '');
+  const box = $('opts'); box.className = 'opts' + (nOpt === 4 && type !== 'pic' ? ' four' : '');
+  if (type === 'pic') {
+    const pl = opts.slice(0, 3).includes(L.l) ? opts.slice(0, 3) : [L.l, ...opts.filter(o => o !== L.l).slice(0, 2)].sort(() => Math.random() - .5);
+    box.innerHTML = pl.map(o => { const w = LETRAS.find(x => x.l === o).palavra; return `<button class="tile pict" data-l="${o}" aria-label="${w}">${PICS[w] || ''}</button>`; }).join('');
+  } else
   box.innerHTML = opts.map(o => `<button class="tile" data-l="${o}" aria-label="Letra ${o}">${o}</button>`).join('');
   for (const b of box.children) b.onclick = () => answer(b);
   speakQ();
 }
-function speakQ() { Voice.say((q.type === 'find' ? 'find_' : 'start_') + q.L.l); }
+function speakQ() { Voice.say(({ find: 'find_', start: 'start_', pic: 'pic_' })[q.type] + q.L.l); }
 
 function answer(b) {
   if (busy) return;
@@ -532,6 +550,10 @@ function born() {
   img.style.animation = 'none'; void img.offsetWidth; img.style.animation = '';
   $('bornName').textContent = c.nome + (first ? '' : ' (de novo!)');
   const [x, y] = centerOf(img); burst(x, y, 70);
+  const bc = $('bornCv'); bc.style.opacity = '0'; img.style.opacity = '1';
+  if (!c.custom && window.OVO3D) window.OVO3D.open(c.id, bc, $('bornBox'), { intro: true,
+    ready: () => { if (screen !== 'hatch') return; setTimeout(() => { bc.style.opacity = '1'; img.style.opacity = '0'; }, 120); },
+    tap: () => { Snd.boing(); if (c.custom) Voice.tts(c.nome); else Voice.say('nm_' + c.id); } }).catch(() => {});
   Voice.say('born');
   if (c.custom) Voice.tts(c.nome + '!', true); else Voice.say('nm_' + c.id, true);
   if (newLetters) Voice.say('newletters', true);
@@ -620,6 +642,11 @@ function openParents() {
   show('parents'); $('pMsg').textContent = ''; $('cMsg').textContent = '';
   for (const b of $('segMode').children) b.classList.toggle('on', b.dataset.v === Save.d.mode);
   $('modeInfo').textContent = MODE_INFO[Save.d.mode] + (Save.d.mode === 'auto' ? ` Agora: ${Save.d.unlocked} de ${LETRAS.length} letras.` : '');
+  $('rep').innerHTML = LETRAS.map(x => {
+    const s = Save.d.stats[x.l] || { ok: 0, err: 0, seen: 0 }, tot = s.ok + s.err, acc = tot ? s.ok / tot : 0;
+    const cls = !tot ? 'new' : (s.ok >= 3 && acc >= .75) ? 'ok' : acc < .5 && tot >= 2 ? 'bad' : 'mid';
+    return `<div class="rl ${cls}">${x.l}<small>${tot ? Math.round(acc * 100) + '%' : '–'}</small></div>`;
+  }).join('');
   const cl = $('cList'); cl.innerHTML = '';
   for (const c of Custom.list) {
     const d = document.createElement('div'); d.className = 'ccard';
@@ -655,14 +682,16 @@ $('bPlay').onclick = () => { Snd.init(); Snd.tap(); show('play'); Voice.say('wel
 $('bZoo').onclick = () => { Snd.init(); Snd.tap(); goZoo(); };
 $('bZooBack').onclick = () => { Snd.tap(); goHome(); };
 $('vClose').onclick = () => { Snd.tap(); closeViewer(); };
-$('bHome').onclick = () => { Snd.tap(); Voice.stop(); goHome(); };
-$('bSeeZoo').onclick = () => { Snd.tap(); goZoo(); };
-$('bAgain').onclick = () => { Snd.tap(); show('play'); newRound(); };
+$('bHome').onclick = () => { Snd.tap(); Voice.stop(); if (window.OVO3D) window.OVO3D.close(); goHome(); };
+$('bSeeZoo').onclick = () => { Snd.tap(); if (window.OVO3D) window.OVO3D.close(); goZoo(); };
+$('bAgain').onclick = () => { Snd.tap(); if (window.OVO3D) window.OVO3D.close(); show('play'); newRound(); };
 for (const id of ['bSound', 'bSound2']) $(id).onclick = () => { Snd.init(); Snd.setOn(!Save.d.sound); syncSound(); };
 $('bParents').onclick = () => { Snd.init(); Snd.tap(); openGate(); };
 $('bGateBack').onclick = () => { Snd.tap(); goHome(); };
 $('gateForm').addEventListener('submit', e => { e.preventDefault(); if (parseInt($('gateAns').value, 10) === gateAns) openParents(); else { $('gateErr').hidden = false; $('gateAns').value = ''; } });
 $('segMode').onclick = e => { const v = e.target.dataset && e.target.dataset.v; if (!v) return; Save.d.mode = v; Save.save(); openParents(); };
+$('bPickC').onclick = () => $('cFile').click();
+$('cFile').onchange = () => { const f = $('cFile').files[0]; $('cFileName').textContent = f ? 'Imagem: ' + f.name : 'Nenhuma imagem escolhida.'; };
 $('bAddC').onclick = async () => {
   const nome = $('cName').value.trim(), f = $('cFile').files[0];
   if (!nome) { $('cMsg').textContent = 'Digite um nome.'; return; }
@@ -671,7 +700,7 @@ $('bAddC').onclick = async () => {
     const img = await readImage(f);
     Custom.list.push({ id: 'c' + Date.now(), nome, img });
     if (!Custom.save()) { Custom.list.pop(); $('cMsg').textContent = 'Sem espaço no aparelho. Remova uma criatura ou use uma imagem menor.'; return; }
-    $('cName').value = ''; $('cFile').value = ''; openParents(); $('cMsg').textContent = 'Criatura adicionada! Ela vai sair dos próximos ovos.';
+    $('cName').value = ''; $('cFile').value = ''; $('cFileName').textContent = 'Nenhuma imagem escolhida.'; openParents(); $('cMsg').textContent = 'Criatura adicionada! Ela vai sair dos próximos ovos.';
   } catch (e) { $('cMsg').textContent = 'Não consegui abrir essa imagem.'; }
 };
 $('bPBack').onclick = () => { Snd.tap(); goHome(); };
@@ -728,24 +757,30 @@ window.OVO3D = {
     const onUp = e => { pts.delete(e.pointerId); if (moved < 8 && performance.now() - downAt < 350) { jump = 1; cb.tap && cb.tap(); } };
     const onWheel = e => { e.preventDefault(); zoom = Math.min(1.6, Math.max(.55, zoom * (1 + Math.sign(e.deltaY) * .08))); };
     stage.addEventListener('pointerdown', onDown); stage.addEventListener('pointermove', onMove); stage.addEventListener('pointerup', onUp); stage.addEventListener('pointercancel', onUp); stage.addEventListener('wheel', onWheel, { passive: false });
-    let t = 0, last = performance.now(), raf = 0, first = true;
+    let t = 0, last = performance.now(), first = true, ema = 16, slowT = 0, low = false;
+    const me = { renderer, scene, pm, raf: 0, closed: false };
     const loop = now => {
-      const dt = Math.min(.05, Math.max(0, now - last) / 1000); last = now; t += dt;
+      if (me.closed) return;
+      const raw = Math.max(0, now - last), dt = Math.min(.05, raw / 1000); last = now; t += dt;
+      // aparelho lento: menos resolução e sem sombra
+      if (t > 1 && raw < 250) { ema = ema * .92 + raw * .08; if (!low && ema > 38) { slowT += dt; if (slowT > 1) { low = true; renderer.setPixelRatio(1); renderer.setSize(W, H, false); key.castShadow = false; ground.visible = false; } } }
       if (!pts.size) { vy *= Math.pow(.04, dt); yaw += vy + dt * .25 * (Math.abs(vy) < .002 ? 1 : 0); }
       spin.rotation.y = yaw;
       jump = Math.max(0, jump - dt * 1.8); const j = Math.sin((1 - jump) * Math.PI) * (jump > 0 ? 1 : 0);
       hop.position.y = Math.sin(t * 2.2) * .04 + j * .5;
-      hop.scale.set(1 + (jump > .85 ? .08 : 0) - j * .03, 1 - (jump > .85 ? .08 : 0) + j * .05, 1 + (jump > .85 ? .08 : 0) - j * .03);
+      const intro = cb.intro ? Math.min(1, t / .9) : 1, ib = intro < 1 ? 1 - Math.pow(1 - intro, 3) * Math.cos(intro * 9) : 1;
+      if (cb.intro && intro < 1) { hop.position.y += (1 - intro) * 1.2; spin.rotation.y = yaw + (1 - intro) * 6; }
+      hop.scale.set((1 + (jump > .85 ? .08 : 0) - j * .03) * ib, (1 - (jump > .85 ? .08 : 0) + j * .05) * ib, (1 + (jump > .85 ? .08 : 0) - j * .03) * ib);
       spin.rotation.z = Math.sin(t * 1.7) * .03;
       fit(); renderer.render(scene, cam);
       if (first) { first = false; cb.ready && cb.ready(); }
-      raf = requestAnimationFrame(loop);
+      me.raf = requestAnimationFrame(loop);
     };
-    raf = requestAnimationFrame(loop);
-    st = { renderer, scene, pm, raf, off: () => { stage.removeEventListener('pointerdown', onDown); stage.removeEventListener('pointermove', onMove); stage.removeEventListener('pointerup', onUp); stage.removeEventListener('pointercancel', onUp); stage.removeEventListener('wheel', onWheel); } };
+    me.raf = requestAnimationFrame(loop);
+    st = me; me.off = () => { stage.removeEventListener('pointerdown', onDown); stage.removeEventListener('pointermove', onMove); stage.removeEventListener('pointerup', onUp); stage.removeEventListener('pointercancel', onUp); stage.removeEventListener('wheel', onWheel); };
   },
   close() {
-    if (!st) return; cancelAnimationFrame(st.raf); st.off();
+    if (!st) return; st.closed = true; cancelAnimationFrame(st.raf); st.off();
     st.scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { if (m.map) m.map.dispose(); m.dispose(); }); } });
     st.pm.dispose(); st.renderer.dispose(); st = null;
   },
