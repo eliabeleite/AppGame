@@ -40,6 +40,12 @@ button:focus-visible{outline:4px solid var(--blue);outline-offset:3px}
 .ib:active{transform:translateY(3px);box-shadow:0 1px 0 var(--cream-dk)}
 .ib.off{opacity:.45}
 .ib svg{width:24px;height:24px}
+ /* tablet ou celular deitado: barra na lateral para a arena usar toda a altura */
+#hud.side{right:auto;bottom:0;width:236px;justify-content:center;padding-top:max(12px,env(safe-area-inset-top,0px));padding-bottom:12px}
+#hud.side .bar{flex-wrap:wrap;justify-content:center;gap:10px}
+#hud.side .bar .grow{flex:1 0 100%;order:-1;padding-bottom:6px}
+#hud.side .goal{flex-direction:column;align-items:stretch;gap:8px}
+#hud.side #spears{flex-wrap:wrap;justify-content:center}
 #lvlName{font-weight:700;font-size:21px;color:#fff;text-shadow:0 2px 0 var(--ink),0 0 6px rgba(74,44,23,.4);white-space:nowrap}
 #scoreBox{margin-top:4px;font-weight:700;font-size:15px;background:var(--sun);color:var(--ink);border-radius:10px;padding:2px 10px;
   box-shadow:0 3px 0 var(--sun-dk);font-variant-numeric:tabular-nums;transition:transform .15s}
@@ -822,17 +828,21 @@ const cv = $('cv'); let ctx = cv.getContext('2d');
 let DPR = 1, VS = 1, OX = 0, OY = 0, CW = 0, CH = 0;
 const sceneCv = document.createElement('canvas'), sctx = sceneCv.getContext('2d');
 let sceneKey = '';
+let quality = 2; // teto de resolução; cai sozinho se o aparelho estiver lento
 function resize() {
-  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  DPR = Math.min(window.devicePixelRatio || 1, quality);
   CW = innerWidth; CH = innerHeight;
   cv.width = Math.round(CW * DPR); cv.height = Math.round(CH * DPR);
   const hud = $('hud');
-  const top = !hud.hidden ? hud.getBoundingClientRect().bottom + 8 : 20;
+  const side = CW > CH * 1.05 && CW >= 560;
+  hud.classList.toggle('side', side);
   const sab = $('sab').getBoundingClientRect().height || 0;
-  const availW = CW - 12, availH = CH - top - 10 - sab;
+  let left = 6, top = 20;
+  if (!hud.hidden) { const r = hud.getBoundingClientRect(); if (side) { left = r.right + 8; top = 10; } else top = r.bottom + 8; }
+  const availW = CW - left - 6, availH = CH - top - 10 - sab;
   VS = Math.min(availW / W, availH / H);
-  OX = (CW - W * VS) / 2; OY = top + Math.max(0, (availH - H * VS) / 2);
-  sceneKey = '';
+  OX = left + (availW - W * VS) / 2; OY = top + Math.max(0, (availH - H * VS) / 2);
+  sceneKey = ''; bgKey = '';
 }
 addEventListener('resize', resize);
 
@@ -1512,18 +1522,32 @@ function drawSceneAnimated() {
     }
   }
 }
+const bgCv = document.createElement('canvas'), bgx = bgCv.getContext('2d');
+let bgKey = '';
 function drawBackground() {
+  const key = [world, CW, CH, DPR, OX, OY, VS].join(':');
+  if (key !== bgKey) {
+    bgKey = key; bgCv.width = cv.width; bgCv.height = cv.height;
+    const keep = ctx; ctx = bgx;
+    try {
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0); paintBackground();
+      ctx.setTransform(DPR * VS, 0, 0, DPR * VS, DPR * OX, DPR * OY);
+      ctx.save(); ctx.shadowColor = 'rgba(20,30,60,.4)'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 10;
+      rr(ctx, 0, 0, W, H, 22); ctx.fillStyle = '#8a5428'; ctx.fill(); ctx.restore();
+    } finally { ctx = keep; }
+  }
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(bgCv, 0, 0);
+}
+function paintBackground() {
   const w = WORLDS[world];
   const g = ctx.createLinearGradient(0, 0, 0, CH); g.addColorStop(0, w.bg[0]); g.addColorStop(1, w.bg[1]);
   ctx.fillStyle = g; ctx.fillRect(0, 0, CW, CH);
-  if (w.time === 'night') { for (let i = 0; i < 60; i++) { ctx.globalAlpha = .3 + .7 * Math.abs(Math.sin(T + i)); ctx.fillStyle = '#fff'; ctx.fillRect((i * 131) % CW, (i * 71) % CH, 2, 2); } ctx.globalAlpha = 1; }
+  if (w.time === 'night') { for (let i = 0; i < 60; i++) { ctx.globalAlpha = .3 + .7 * Math.abs(Math.sin(i * 1.7)); ctx.fillStyle = '#fff'; ctx.fillRect((i * 131) % CW, (i * 71) % CH, 2, 2); } ctx.globalAlpha = 1; }
   else for (const c of clouds) puff(ctx, c.x * CW, c.y * CH, c.s * 1.2, w.time === 'dusk' ? 'rgba(255,225,200,.7)' : 'rgba(255,255,255,.75)');
 }
 function drawArena() {
   buildScene();
-  ctx.save();
-  ctx.shadowColor = 'rgba(20,30,60,.4)'; ctx.shadowBlur = 20; ctx.shadowOffsetY = 10;
-  rr(ctx, 0, 0, W, H, 22); ctx.fillStyle = '#8a5428'; ctx.fill(); ctx.restore();
+  rr(ctx, 0, 0, W, H, 22); ctx.fillStyle = '#8a5428'; ctx.fill();
   ctx.save(); rr(ctx, WALL, WALL, W - 2 * WALL, H - 2 * WALL, 14); ctx.clip();
   ctx.drawImage(sceneCv, 0, 0, W, H);
   drawSceneAnimated();
@@ -2051,8 +2075,14 @@ function draw() {
 }
 
 let last = performance.now();
+let ema = 16, perfT = 0, perfCool = 2;
 function loop(now) {
-  const dt = Math.min(.05, (now - last) / 1000); last = now;
+  const raw = now - last;
+  const dt = Math.min(.05, raw / 1000); last = now;
+  if (!document.hidden && raw < 250) {
+    ema = ema * .94 + raw * .06; perfT += raw / 1000;
+    if (perfT > perfCool && ema > 30 && quality > 1) { quality = Math.max(1, quality - .5); resize(); perfT = 0; perfCool = 2.5; ema = 16; }
+  }
   update(dt); draw();
   requestAnimationFrame(loop);
 }
