@@ -82,6 +82,7 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
 .lv.w1{background:#ffb27a;box-shadow:0 5px 0 #d9733a}
 .lv.w2{background:#8fa2ff;box-shadow:0 5px 0 #5163c9;color:#fff}
 .lv.w2 .st{color:#ffe36b}
+.lv.w3{background:#ff9ecf;box-shadow:0 5px 0 #d4609c}
 .lv[disabled]{background:#e4dccb;box-shadow:0 5px 0 #c4b89f;color:#a99c83;cursor:default;font-size:16px}
 .row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px}
 .stars{display:flex;justify-content:center;gap:6px;margin:4px 0 2px}
@@ -163,7 +164,7 @@ const LINES = /*LINES-START*/{
 "combo2":"Combo!","combo3":"Super combo!","combo4":"Mega combo!","combo5":"Combo galáctico!",
 "sp_triple":"Lança tripla!","sp_giant":"Lança gigante!","sp_extra":"Ganhou uma lança extra!",
 "gold":"Olha a galinha dourada! Ela vale muitos pontos!","helmet":"Essa galinha tem capacete! Precisa acertar duas vezes!","helmet_off":"Plim! Caiu o capacete!",
-"hint":"Arraste o dedo para mirar e solte para lançar!","power":"Segure o dedo mais tempo para a lança ficar super rápida!","super":"Super lançamento!",
+"hint":"Arraste o dedo para mirar e solte para lançar!","power":"Segure o dedo mais tempo para a lança ficar super rápida!","super":"Super lançamento!","world4":"Uau! Chegamos ao mundo do arco-íris! Agora é desafio!","say_stick":"A lança fica presa onde bater. Depois você atira de lá!","say_pad":"Só as almofadas azuis fazem a lança quicar!","say_glass":"Quebre o vidro com a lança!","say_portal":"Entre no portal azul e saia no laranja!","say_magnet":"Pegue a bolha do ímã. A lança vai atrás das galinhas!","say_confetti":"A bolha de confete faz a lança explodir em festa!","say_ride":"Acerte a caixa que anda e atire de cima dela!","sp_magnet":"Lança ímã!","sp_confetti":"Lança confete!","streak":"Sequência!","golden":"Ganhou a lança dourada!","trick":"Tabela!","perfect":"Perfeito!","boss":"Cuidado com a galinha rainha! Ela precisa de três lançadas!","intro_BOLA":"Vamos formar a palavra bola!","spell_BOLA":"Bê, ó, éle, á. Bola! Muito bem!","L_B":"Bê!",
 "say_wall":"A caixa está no caminho. Jogue na parede!","say_one":"Uma lança só pode pegar todas!","say_bounce":"O pula-pula azul faz a lança quicar!",
 "say_final":"Última fase! Você consegue!","say_combo":"Acerte as duas com uma lança só!","say_triple":"Acerte a bolha para ganhar uma lança tripla!","say_giant":"Acerte a bolha para a lança ficar gigante!",
 "world1":"Bem-vindo à fazenda!","world2":"Olha que lindo o pôr do sol!","world3":"Ficou de noite! Cuidado com as galinhas dorminhocas!",
@@ -176,7 +177,7 @@ const LINES = /*LINES-START*/{
 
 /*SIM-START*/
 const W = 400, H = 680, WALL = 12, SPEED = 720, STEP = 3, TIP = 4, MAXLEN = 3600;
-const CH_RX = 24, CH_RY = 31, BUB_R = 21;
+const CH_RX = 24, CH_RY = 31, BUB_R = 21, PORT_R = 22;
 
 function movedXY(o, t) {
   if (!o.move) return { x: o.x, y: o.y };
@@ -184,32 +185,49 @@ function movedXY(o, t) {
   return { x: o.x + (o.move.dx || 0) * k, y: o.y + (o.move.dy || 0) * k };
 }
 function blockRect(b, t) { const p = movedXY(b, t); return { x: p.x, y: p.y, w: b.w, h: b.h }; }
+function padAt(lv, side, v) { for (const p of lv.pads || []) if (p.side === side && v >= p.a && v <= p.b) return p; return null; }
 
-// Avança a lança 'dist' unidades. cb(tipo, dados): bounce, stick, hit, bubble, end
+// Avança a lança 'dist' unidades. Parede comum e caixa SEGURAM a lança; só almofada e pula-pula fazem quicar.
+// cb(tipo, dados): bounce, stick, hit, bubble, portal, end
 function advance(sp, dist, lv, chickens, cb) {
-  const maxB = lv.maxB || 2;
+  const maxB = lv.maxB || 6;
   let rem = dist;
   while (rem > 0 && !sp.done) {
     const st = Math.min(STEP, rem); rem -= st;
+    if (sp.magnet) {
+      let best = null, bd = 200;
+      for (const c of chickens) {
+        if (c.hit || c.target === false) continue;
+        const p = movedXY(c, sp.t), d = Math.hypot(p.x - sp.x, p.y - sp.y);
+        if (d < bd) { bd = d; best = p; }
+      }
+      if (best) {
+        const want = Math.atan2(best.y - sp.y, best.x - sp.x), cur = Math.atan2(sp.dy, sp.dx);
+        let da = want - cur; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
+        const a = cur + Math.max(-.04, Math.min(.04, da));
+        sp.dx = Math.cos(a); sp.dy = Math.sin(a);
+      }
+    }
     const px = sp.x, py = sp.y;
     let nx = px + sp.dx * st, ny = py + sp.dy * st;
     sp.t += st / (sp.spd || SPEED); sp.len += st;
     const lo = WALL + TIP, hiX = W - WALL - TIP, hiY = H - WALL - TIP;
-    let wallHit = null;
-    if (nx < lo || nx > hiX) wallHit = 'x';
-    else if (ny < lo || ny > hiY) wallHit = 'y';
-    if (wallHit) {
+    let side = null;
+    if (nx < lo) side = 'L'; else if (nx > hiX) side = 'R'; else if (ny < lo) side = 'T'; else if (ny > hiY) side = 'B';
+    if (side) {
       nx = Math.max(lo, Math.min(hiX, nx)); ny = Math.max(lo, Math.min(hiY, ny));
-      if (sp.b >= maxB) { sp.x = nx; sp.y = ny; sp.done = true; cb && cb('stick', { x: nx, y: ny, block: null }); break; }
-      if (wallHit === 'x') sp.dx = -sp.dx; else sp.dy = -sp.dy;
-      sp.b++; sp.x = nx; sp.y = ny; cb && cb('bounce', { x: nx, y: ny }); continue;
+      const pad = padAt(lv, side, side === 'L' || side === 'R' ? ny : nx);
+      if (!pad || sp.b >= maxB) { sp.x = nx; sp.y = ny; sp.done = true; cb && cb('stick', { x: nx, y: ny, block: null, side }); break; }
+      if (side === 'L' || side === 'R') sp.dx = -sp.dx; else sp.dy = -sp.dy;
+      sp.b++; sp.x = nx; sp.y = ny; cb && cb('bounce', { x: nx, y: ny, pad }); continue;
     }
     let blocked = false;
     for (const b of lv.blocks || []) {
+      if (b.broken) continue;
       const r = blockRect(b, sp.t);
       if (nx >= r.x - TIP && nx <= r.x + r.w + TIP && ny >= r.y - TIP && ny <= r.y + r.h + TIP) {
         const wasInX = px >= r.x - TIP && px <= r.x + r.w + TIP;
-        if (b.kind === 'wood' || sp.b >= maxB) {
+        if (b.kind !== 'bounce' || sp.b >= maxB) {
           sp.x = px; sp.y = py; sp.done = true;
           cb && cb('stick', { x: px, y: py, block: b, rect: r }); blocked = true; break;
         }
@@ -219,11 +237,24 @@ function advance(sp, dist, lv, chickens, cb) {
     }
     if (blocked) continue;
     sp.x = nx; sp.y = ny;
+    for (const pt of lv.portals || []) {
+      let jumped = false;
+      for (const [from, to] of [[pt.a, pt.b], [pt.b, pt.a]]) {
+        const inside = (sp.x - from.x) ** 2 + (sp.y - from.y) ** 2 < PORT_R * PORT_R;
+        if (inside && !sp.inside.has(from)) {
+          const fx = sp.x, fy = sp.y;
+          sp.x = to.x + sp.dx * (PORT_R + 3); sp.y = to.y + sp.dy * (PORT_R + 3);
+          sp.inside.add(from); sp.inside.add(to);
+          cb && cb('portal', { fx, fy, x: sp.x, y: sp.y, from, to }); jumped = true; break;
+        } else if (!inside) sp.inside.delete(from);
+      }
+      if (jumped) break;
+    }
     const k = sp.big ? 2 : 1;
     for (const c of chickens) {
       if (c.hit) continue;
-      const p = movedXY(c, sp.t);
-      const ex = (nx - p.x) / (CH_RX * k + TIP), ey = (ny - p.y) / (CH_RY * k + TIP);
+      const p = movedXY(c, sp.t), s = c.sz || 1;
+      const ex = (sp.x - p.x) / (CH_RX * k * s + TIP), ey = (sp.y - p.y) / (CH_RY * k * s + TIP);
       const inside = ex * ex + ey * ey < 1;
       if (inside && !sp.inside.has(c)) { sp.inside.add(c); cb && cb('hit', c); }
       else if (!inside) sp.inside.delete(c);
@@ -231,83 +262,124 @@ function advance(sp, dist, lv, chickens, cb) {
     for (const b of lv.bubbles || []) {
       if (b.taken || sp.inside.has(b)) continue;
       const p = movedXY(b, sp.t), rr = BUB_R * k + TIP;
-      if ((nx - p.x) ** 2 + (ny - p.y) ** 2 < rr * rr) { sp.inside.add(b); cb && cb('bubble', b); }
+      if ((sp.x - p.x) ** 2 + (sp.y - p.y) ** 2 < rr * rr) { sp.inside.add(b); cb && cb('bubble', b); }
     }
     if (sp.len >= MAXLEN) { sp.done = true; cb && cb('end', { x: sp.x, y: sp.y }); }
   }
 }
 
 function newSpear(x, y, ang, t) {
-  return { x, y, dx: Math.cos(ang), dy: Math.sin(ang), b: 0, len: 0, t: t || 0, done: false, inside: new Set(), big: 0 };
+  return { x, y, dx: Math.cos(ang), dy: Math.sin(ang), b: 0, len: 0, t: t || 0, done: false, inside: new Set(), big: 0, magnet: 0 };
 }
-
-function along(L, deg, dists, blocks, maxB) {
+// Ponto de onde sai a próxima lança (onde a anterior parou), um pouco para dentro da arena
+function stickPoint(d) {
+  let x = d.x, y = d.y;
+  if (d.side === 'L') x += 1; else if (d.side === 'R') x -= 1; else if (d.side === 'T') y += 1; else if (d.side === 'B') y -= 1;
+  return { x, y };
+}
+function along(L, deg, dists, lv) {
   const sp = newSpear(L.x, L.y, deg * Math.PI / 180, 0);
   const out = []; let last = 0;
-  for (const d of dists) { advance(sp, d - last, { blocks: blocks || [], maxB: maxB || 6 }, [], null); last = d; out.push({ x: Math.round(sp.x), y: Math.round(sp.y) }); }
+  for (const d of dists) { advance(sp, d - last, { blocks: lv.blocks || [], pads: lv.pads || [], maxB: 8 }, [], null); last = d; out.push({ x: Math.round(sp.x), y: Math.round(sp.y) }); }
   return out;
 }
 
-const METAL2 = [{ x: 40, y: 300, w: 110, h: 24, kind: 'metal' }, { x: 250, y: 300, w: 110, h: 24, kind: 'metal' }];
+const FULL_LR = [{ side: 'L', a: 0, b: H }, { side: 'R', a: 0, b: H }];
+const BOUNCE2 = [{ x: 40, y: 300, w: 110, h: 24, kind: 'bounce' }, { x: 250, y: 300, w: 110, h: 24, kind: 'bounce' }];
 const LEVELS = [
-  // ---- Mundo 1: Fazenda (manhã)
+  // ---- Mundo 1: Fazenda
   { name: 'Primeiro voo', type: 'all', launcher: { x: 200, y: 610 }, spears: 3, par: 1, hint: true,
-    chickens: [{ x: 200, y: 250, kind: 'derp' }] },
-  { name: 'Duas de uma vez', type: 'all', launcher: { x: 330, y: 610 }, spears: 3, par: 1, say: 'say_combo',
-    chickens: [{ x: 255, y: 450, kind: 'cool' }, { x: 180, y: 290, kind: 'plain' }] },
-  { name: 'Três amigas', type: 'all', launcher: { x: 200, y: 615 }, spears: 4, par: 3,
-    chickens: [{ x: 95, y: 200, kind: 'dancer' }, { x: 305, y: 200, kind: 'mama' }, { x: 200, y: 360, kind: 'sleepy' }],
-    bubbles: [{ x: 200, y: 500, kind: 'extra' }] },
-  { name: 'Use a parede', type: 'all', launcher: { x: 200, y: 615 }, spears: 3, par: 1, say: 'say_wall',
-    chickens: [{ x: 200, y: 150, kind: 'cool' }], blocks: [{ x: 120, y: 330, w: 160, h: 56, kind: 'wood' }] },
+    chickens: [{ x: 200, y: 260, kind: 'derp' }] },
+  { name: 'Atire de onde parou', type: 'all', launcher: { x: 70, y: 610 }, spears: 4, par: 2, say: ['say_stick'],
+    chickens: [{ x: 70, y: 330, kind: 'cool' }, { x: 320, y: 170, kind: 'plain' }],
+    blocks: [{ x: 160, y: 360, w: 110, h: 70, kind: 'wood' }] },
+  { name: 'Duas de uma vez', type: 'all', launcher: { x: 330, y: 610 }, spears: 3, par: 1, say: ['say_combo', 'power'],
+    chickens: [{ x: 255, y: 450, kind: 'dancer' }, { x: 180, y: 290, kind: 'mama' }] },
+  { name: 'Almofada que quica', type: 'all', launcher: { x: 200, y: 615 }, spears: 3, par: 1, say: ['say_pad'],
+    chickens: [{ x: 200, y: 140, kind: 'cool' }], blocks: [{ x: 120, y: 330, w: 160, h: 56, kind: 'wood' }],
+    pads: [{ side: 'R', a: 250, b: 500 }] },
   { name: 'Chapéu vermelho', type: 'color', goal: 'red', launcher: { x: 350, y: 615 }, spears: 5, par: 3,
     chickens: [{ x: 90, y: 190, color: 'red' }, { x: 300, y: 320, color: 'red' }, { x: 110, y: 470, color: 'red' },
-               { x: 220, y: 180, color: 'blue' }, { x: 230, y: 500, color: 'blue' }] },
-  { name: 'Galinha dourada', type: 'all', launcher: { x: 200, y: 615 }, spears: 4, par: 2, say: 'gold',
+               { x: 220, y: 180, color: 'blue' }, { x: 230, y: 500, color: 'blue' }],
+    pads: [{ side: 'L', a: 260, b: 420 }] },
+  { name: 'Vidro e ouro', type: 'all', launcher: { x: 200, y: 615 }, spears: 5, par: 3, say: ['say_glass', 'gold'],
     chickens: [{ x: 105, y: 250, kind: 'derp' }, { x: 295, y: 250, kind: 'dancer' }, { x: 200, y: 130, kind: 'gold' }],
-    blocks: [{ x: 165, y: 390, w: 70, h: 44, kind: 'wood' }] },
+    blocks: [{ x: 12, y: 400, w: 376, h: 22, kind: 'glass' }] },
   // ---- Mundo 2: Pôr do sol
-  { name: 'Palavra OVO', type: 'word', goal: 'OVO', launcher: { x: 200, y: 615 }, spears: 4, par: 1, say: 'say_triple',
+  { name: 'Palavra OVO', type: 'word', goal: 'OVO', launcher: { x: 200, y: 615 }, spears: 4, par: 1, say: ['say_triple'],
     chickens: [{ x: 95, y: 180, letter: 'O' }, { x: 200, y: 150, letter: 'V' }, { x: 305, y: 180, letter: 'O' }],
     bubbles: [{ x: 200, y: 440, kind: 'triple' }] },
-  { name: 'Nuvem que anda', type: 'all', launcher: { x: 200, y: 615 }, spears: 4, par: 2, say: 'say_giant',
-    chickens: [{ x: 200, y: 190, move: { dx: 120, sp: 1.3 }, kind: 'dancer' }, { x: 200, y: 380, kind: 'sleepy' }],
-    bubbles: [{ x: 200, y: 510, kind: 'giant' }] },
-  { name: 'Ache as estrelas', type: 'shape', goal: 'star', launcher: { x: 60, y: 615 }, spears: 5, par: 3,
-    chickens: [{ x: 300, y: 180, shape: 'star' }, { x: 120, y: 330, shape: 'star' }, { x: 300, y: 470, shape: 'star' },
-               { x: 260, y: 330, shape: 'circle' }, { x: 110, y: 170, shape: 'square' }] },
-  { name: 'Capacete!', type: 'all', launcher: { x: 200, y: 620 }, spears: 6, par: 4, say: 'helmet',
-    chickens: [{ x: 110, y: 200, kind: 'helmet' }, { x: 290, y: 300, kind: 'helmet' }, { x: 200, y: 450, kind: 'derp' }] },
-  { name: 'Zigue-zague', type: 'all', launcher: { x: 370, y: 130 }, spears: 3, par: 1, say: 'say_one',
-    chickens: along({ x: 370, y: 130 }, 150, [140, 330, 560, 720, 905], [], 2) },
-  { name: 'Palavra SOL', type: 'word', goal: 'SOL', launcher: { x: 200, y: 615 }, spears: 5, par: 2, say: 'say_bounce',
+  { name: 'Portal mágico', type: 'all', launcher: { x: 200, y: 615 }, spears: 5, par: 3, say: ['say_portal'],
+    chickens: [{ x: 90, y: 110, kind: 'sleepy' }, { x: 300, y: 270, kind: 'derp' }],
+    blocks: [{ x: 12, y: 230, w: 168, h: 20, kind: 'wood' }, { x: 180, y: 12, w: 20, h: 238, kind: 'wood' }],
+    portals: [{ a: { x: 130, y: 470 }, b: { x: 140, y: 195 } }] },
+  { name: 'Lança ímã', type: 'all', launcher: { x: 200, y: 615 }, spears: 4, par: 2, say: ['say_magnet'],
+    chickens: [{ x: 110, y: 200, move: { dx: 70, sp: 1.4 } }, { x: 290, y: 200, move: { dx: -70, sp: 1.2 } }, { x: 200, y: 340, move: { dx: 110, sp: 1 } }],
+    bubbles: [{ x: 200, y: 520, kind: 'magnet' }] },
+  { name: 'Capacete!', type: 'all', launcher: { x: 200, y: 620 }, spears: 6, par: 4, say: ['helmet'],
+    chickens: [{ x: 110, y: 200, kind: 'helmet' }, { x: 290, y: 300, kind: 'helmet' }, { x: 200, y: 450, kind: 'derp' }],
+    pads: [{ side: 'T', a: 0, b: W }] },
+  { name: 'Zigue-zague', type: 'all', launcher: { x: 370, y: 130 }, spears: 3, par: 1, maxB: 4, say: ['say_one'], pads: FULL_LR,
+    chickens: along({ x: 370, y: 130 }, 150, [140, 330, 560, 720, 905], { pads: FULL_LR }) },
+  { name: 'Palavra SOL', type: 'word', goal: 'SOL', launcher: { x: 200, y: 615 }, spears: 5, par: 2, say: ['say_bounce'],
     chickens: [{ x: 75, y: 170, letter: 'S' }, { x: 200, y: 130, letter: 'O' }, { x: 325, y: 170, letter: 'L' }],
-    blocks: [{ x: 110, y: 330, w: 180, h: 26, kind: 'metal' }] },
+    blocks: [{ x: 110, y: 330, w: 180, h: 26, kind: 'bounce' }] },
   // ---- Mundo 3: Noite
   { name: 'Chapéu azul', type: 'color', goal: 'blue', launcher: { x: 350, y: 620 }, spears: 5, par: 3,
     chickens: [{ x: 80, y: 160, color: 'blue' }, { x: 200, y: 300, color: 'blue' }, { x: 320, y: 170, color: 'blue' },
                { x: 120, y: 420, color: 'green' }, { x: 250, y: 150, color: 'green' }],
     blocks: [{ x: 150, y: 480, w: 100, h: 34, kind: 'wood', move: { dx: 100, sp: 1.1 } }],
     bubbles: [{ x: 330, y: 430, kind: 'triple' }] },
-  { name: 'Palavra GATO', type: 'word', goal: 'GATO', launcher: { x: 200, y: 625 }, spears: 6, par: 3,
+  { name: 'Palavra GATO', type: 'word', goal: 'GATO', launcher: { x: 200, y: 625 }, spears: 6, par: 4,
     chickens: [{ x: 90, y: 170, letter: 'G', ground: true }, { x: 305, y: 250, letter: 'A', ground: true },
                { x: 105, y: 390, letter: 'T', ground: true }, { x: 295, y: 480, letter: 'O', ground: true }],
     blocks: [{ x: 50, y: 203, w: 80, h: 14, kind: 'wood' }, { x: 265, y: 283, w: 80, h: 14, kind: 'wood' },
              { x: 65, y: 423, w: 80, h: 14, kind: 'wood' }, { x: 255, y: 513, w: 80, h: 14, kind: 'wood' }] },
+  { name: 'Caixa que anda', type: 'all', launcher: { x: 200, y: 615 }, spears: 5, par: 3, say: ['say_ride'],
+    chickens: [{ x: 60, y: 120 }, { x: 340, y: 120 }, { x: 200, y: 190, kind: 'gold' }],
+    blocks: [{ x: 100, y: 290, w: 200, h: 22, kind: 'wood' }, { x: 150, y: 430, w: 100, h: 30, kind: 'wood', move: { dx: 110, sp: .9 } }] },
   { name: 'Triângulos fujões', type: 'shape', goal: 'triangle', launcher: { x: 200, y: 625 }, spears: 6, par: 3,
     chickens: [{ x: 110, y: 200, shape: 'triangle', move: { dx: 60, sp: 1.5 } }, { x: 290, y: 310, shape: 'triangle', move: { dx: -60, sp: 1.2 } },
-               { x: 200, y: 450, shape: 'triangle' }, { x: 300, y: 160, shape: 'circle' }, { x: 100, y: 380, shape: 'square' }] },
-  { name: 'Caixa teimosa', type: 'all', launcher: { x: 30, y: 150 }, spears: 4, par: 1,
-    chickens: along({ x: 30, y: 150 }, 28, [150, 320, 540, 780, 950], [], 2),
-    blocks: [{ x: 146, y: 440, w: 40, h: 40, kind: 'wood', move: { dx: 55, sp: 1.2 } }] },
-  { name: 'Palavra PATO', type: 'word', goal: 'PATO', launcher: { x: 200, y: 625 }, spears: 5, par: 2, say: 'say_giant',
+               { x: 200, y: 450, shape: 'triangle' }, { x: 300, y: 160, shape: 'circle' }, { x: 100, y: 380, shape: 'square' }],
+    pads: [{ side: 'L', a: 100, b: 600 }, { side: 'R', a: 100, b: 600 }] },
+  { name: 'Palavra PATO', type: 'word', goal: 'PATO', launcher: { x: 200, y: 625 }, spears: 5, par: 3, say: ['say_giant'],
     chickens: [{ x: 85, y: 160, letter: 'P' }, { x: 315, y: 160, letter: 'A' }, { x: 140, y: 330, letter: 'T', move: { dx: 50, sp: 1.2 } }, { x: 285, y: 420, letter: 'O' }],
     bubbles: [{ x: 200, y: 520, kind: 'giant' }] },
-  { name: 'Grande final', type: 'all', launcher: { x: 200, y: 625 }, spears: 6, par: 3, maxB: 3, say: 'say_final',
-    blocks: METAL2,
-    chickens: along({ x: 200, y: 625 }, -62, [250, 600, 900], METAL2, 3)
-      .concat([{ x: 220, y: 140, move: { dx: 100, sp: 1 }, kind: 'gold' }, { x: 85, y: 215, kind: 'helmet' }]),
-    bubbles: [{ x: 330, y: 220, kind: 'extra' }] },
+  { name: 'Vidro e portal', type: 'all', launcher: { x: 60, y: 615 }, spears: 7, par: 4, say: ['say_confetti'],
+    chickens: [{ x: 290, y: 90 }, { x: 345, y: 170, kind: 'sleepy' }, { x: 260, y: 185, kind: 'helmet' }, { x: 90, y: 260, kind: 'dancer' }],
+    blocks: [{ x: 220, y: 250, w: 168, h: 20, kind: 'glass' }, { x: 200, y: 12, w: 20, h: 258, kind: 'wood' }],
+    portals: [{ a: { x: 110, y: 470 }, b: { x: 320, y: 420 } }],
+    bubbles: [{ x: 300, y: 330, kind: 'confetti' }] },
+  // ---- Mundo 4: Arco-íris (desafio)
+  { name: 'Labirinto', type: 'all', launcher: { x: 200, y: 625 }, spears: 7, par: 5, maxB: 4,
+    chickens: [{ x: 60, y: 95, kind: 'sleepy' }, { x: 340, y: 95, kind: 'cool' }, { x: 62, y: 400, kind: 'derp' }, { x: 338, y: 400, kind: 'mama' }],
+    blocks: [{ x: 110, y: 40, w: 20, h: 220, kind: 'wood' }, { x: 270, y: 40, w: 20, h: 220, kind: 'wood' },
+             { x: 12, y: 300, w: 118, h: 20, kind: 'wood' }, { x: 270, y: 300, w: 118, h: 20, kind: 'wood' },
+             { x: 150, y: 480, w: 100, h: 20, kind: 'bounce' }],
+    pads: [{ side: 'T', a: 130, b: 270 }] },
+  { name: 'Palavra BOLA', type: 'word', goal: 'BOLA', launcher: { x: 200, y: 625 }, spears: 6, par: 3, pads: FULL_LR, maxB: 3,
+    chickens: [{ x: 70, y: 150, letter: 'B' }, { x: 330, y: 150, letter: 'O', move: { dy: 40, sp: 1.3 } },
+               { x: 110, y: 340, letter: 'L', move: { dx: 50, sp: 1.1 } }, { x: 290, y: 430, letter: 'A' }],
+    blocks: [{ x: 160, y: 230, w: 80, h: 80, kind: 'wood' }] },
+  { name: 'Quadrados escondidos', type: 'shape', goal: 'square', launcher: { x: 200, y: 625 }, spears: 6, par: 3,
+    chickens: [{ x: 80, y: 130, shape: 'square' }, { x: 320, y: 130, shape: 'square' }, { x: 200, y: 330, shape: 'square', move: { dx: 90, sp: 1 } },
+               { x: 200, y: 130, shape: 'circle' }, { x: 80, y: 330, shape: 'star' }, { x: 320, y: 330, shape: 'triangle' }],
+    blocks: [{ x: 30, y: 195, w: 100, h: 18, kind: 'glass' }, { x: 270, y: 195, w: 100, h: 18, kind: 'glass' }],
+    portals: [{ a: { x: 60, y: 520 }, b: { x: 340, y: 520 } }] },
+  { name: 'Tabela dupla', type: 'all', launcher: { x: 200, y: 625 }, spears: 7, par: 4, maxB: 3,
+    pads: [{ side: 'L', a: 60, b: 620 }, { side: 'R', a: 60, b: 620 }],
+    chickens: [{ x: 62, y: 140, kind: 'derp' }, { x: 338, y: 140, kind: 'dancer' }, { x: 200, y: 110, kind: 'gold' }],
+    blocks: [{ x: 110, y: 220, w: 180, h: 24, kind: 'wood' }, { x: 110, y: 60, w: 20, h: 184, kind: 'wood' }, { x: 270, y: 60, w: 20, h: 184, kind: 'wood' }] },
+  { name: 'Chuva de galinhas', type: 'all', launcher: { x: 200, y: 625 }, spears: 6, par: 3, pads: FULL_LR, maxB: 4,
+    chickens: [{ x: 80, y: 110, move: { dx: 40, sp: 1.2 } }, { x: 200, y: 90 }, { x: 320, y: 110, move: { dx: -40, sp: 1.2 } },
+               { x: 140, y: 230, move: { dx: 60, sp: .9 } }, { x: 260, y: 250, kind: 'gold', move: { dx: -60, sp: .9 } },
+               { x: 70, y: 380 }, { x: 330, y: 380 }, { x: 200, y: 400, kind: 'helmet' }],
+    bubbles: [{ x: 120, y: 520, kind: 'triple' }, { x: 280, y: 520, kind: 'confetti' }] },
+  { name: 'Galinha rainha', type: 'all', launcher: { x: 200, y: 625 }, spears: 8, par: 5, maxB: 3, say: ['boss'],
+    pads: [{ side: 'T', a: 0, b: W }, { side: 'L', a: 200, b: 450 }, { side: 'R', a: 200, b: 450 }],
+    chickens: [{ x: 200, y: 160, kind: 'queen', move: { dx: 110, sp: .8 } }, { x: 85, y: 330, kind: 'helmet' }, { x: 315, y: 330, kind: 'helmet' }],
+    blocks: [{ x: 40, y: 430, w: 130, h: 20, kind: 'glass' }, { x: 230, y: 430, w: 130, h: 20, kind: 'glass' }],
+    bubbles: [{ x: 200, y: 500, kind: 'giant' }, { x: 200, y: 400, kind: 'magnet' }] },
 ];
 /*SIM-END*/
 
@@ -327,12 +399,14 @@ const WORLDS = [
     grass: '#7aa83f', grassDk: '#5f8a2f', bg: ['#f2806a', '#ffd5a0'], time: 'dusk' },
   { name: 'Noite', icon: '🌙', sky: ['#18214a', '#3e4f8e'], far: '#2b3566', farDk: '#222a52', hill1: '#2f5a4a', hill2: '#244a3c', tree: '#1e4434',
     grass: '#2f6b3a', grassDk: '#1f4f2a', bg: ['#111a3a', '#2c3a72'], time: 'night' },
+  { name: 'Arco-íris', icon: '🌈', sky: ['#b9a6ff', '#ffd9f1'], far: '#cbb9ff', farDk: '#ab98ee', hill1: '#a5e8c9', hill2: '#86dbb5', tree: '#ff8fb8',
+    grass: '#7ed9a8', grassDk: '#5cc48d', bg: ['#a58cff', '#ffcce9'], time: 'rainbow' },
 ];
-const worldOf = i => Math.min(2, Math.floor(i / 6));
+const worldOf = i => Math.min(3, Math.floor(i / 6));
 
 /* ---------------- Salvamento ---------------- */
 const Save = {
-  k: 'lancapenas.v2', d: { stars: {}, best: {}, music: true, sound: true },
+  k: 'lancapenas.v3', d: { stars: {}, best: {}, music: true, sound: true },
   load() { try { const r = localStorage.getItem(this.k); if (r) Object.assign(this.d, JSON.parse(r)); } catch (e) {} },
   save() { try { localStorage.setItem(this.k, JSON.stringify(this.d)); } catch (e) {} }
 };
@@ -400,6 +474,8 @@ const Snd = {
   },
   chargeSet(k) { const w = this.chg; if (!w) return; const t = this.ctx.currentTime; w.o.frequency.setTargetAtTime(180 + 620 * k, t, .03); if (k >= 1) { w.l.frequency.setTargetAtTime(18, t, .02); w.lg.gain.setTargetAtTime(40, t, .02); } },
   chargeOff() { const w = this.chg; if (!w) return; this.chg = null; const t = this.ctx.currentTime; w.g.gain.setTargetAtTime(0, t, .02); w.o.stop(t + .2); w.l.stop(t + .2); },
+  glass() { for (let i = 0; i < 5; i++) this.tone(2000 + Math.random() * 3000, .25, { type: 'triangle', vol: .08, when: i * .03 }); this.noise(.35, { freq: 6000, ftype: 'highpass', vol: .35 }); },
+  portal() { this.tone(300, .35, { to: 1500, vol: .2, vib: 20, vd: 80 }); this.tone(1500, .3, { to: 400, vol: .12, type: 'triangle', when: .15 }); },
   powerFull() { this.tone(880, .12, { type: 'square', vol: .07 }); this.tone(1320, .2, { type: 'square', vol: .07, when: .08 }); },
   superShot() { this.noise(.5, { freq: 300, to: 5000, vol: .5, q: .8 }); this.tone(60, .4, { to: 30, vol: .45 }); this.tone(1200, .3, { type: 'sawtooth', to: 2400, vol: .06, lp: 4000 }); },
   ricochet() { this.tone(220, .35, { to: 520, vol: .28, vib: 28, vd: 90 }); this.tone(1400, .08, { type: 'square', vol: .04, to: 700 }); },
@@ -439,7 +515,7 @@ const Snd = {
   world: 0,
   sched() {
     const c = this.ctx; if (!c) return;
-    const cfg = [{ dt: .2, tr: 0, mel: 'triangle' }, { dt: .22, tr: -3, mel: 'square' }, { dt: .27, tr: -5, mel: 'sine' }][this.world];
+    const cfg = [{ dt: .2, tr: 0, mel: 'triangle' }, { dt: .22, tr: -3, mel: 'square' }, { dt: .27, tr: -5, mel: 'sine' }, { dt: .18, tr: 2, mel: 'triangle' }][this.world];
     while (this.next < c.currentTime + .25) {
       const s = this.step % 64, when = this.next - c.currentTime;
       const m = this.MEL[s];
@@ -541,11 +617,12 @@ function resize() {
 addEventListener('resize', resize);
 
 /* ---------------- Estado ---------------- */
-let screen = 'title', phase = 'demo', T = 0, li = 0, L = null, LV = { blocks: [], bubbles: [], maxB: 2 }, world = 0;
+let screen = 'title', phase = 'demo', T = 0, li = 0, L = null, LV = { blocks: [], bubbles: [], pads: [], portals: [], maxB: 6 }, world = 0;
 let chickens = [], spears = [], stuckSpears = [], parts = [], texts = [], banners = [], eggs = [], chicks = [], rings = [];
 let spearsLeft = 0, used = 0, hitCount = 0, slots = [], waitT = 0, shake = 0, flash = 0;
 let score = 0, comboN = 0, bestCombo = 0, slowT = 0, focus = { x: 200, y: 340 }, zoomK = 0;
 let charge = 0, holdT = 0, chargeFull = false;
+let launch = { x: 200, y: 610, block: null }, launchSpear = null, streak = 0, goldenNext = false, throwHits = 0, trickSaid = 0;
 let aim = { x: 200, y: 300 }, aiming = false, hintDone = false, lastWrongSay = 0, lastScared = 0;
 let clouds = [], amb = [];
 for (let i = 0; i < 6; i++) clouds.push({ x: rnd(0, 1), y: rnd(.05, .9), s: rnd(.6, 1.3), v: rnd(.004, .012) });
@@ -555,8 +632,8 @@ function buildChickens(list, seed) {
     const kind = c.kind || PERS[(i * 2 + seed) % PERS.length];
     return {
       x: c.x, y: c.y, move: c.move || null, color: c.color || null, shape: c.shape || null, letter: c.letter || null,
-      ground: !!c.ground, kind, hp: kind === 'helmet' ? 2 : 1, helmet: kind === 'helmet',
-      size: kind === 'mama' ? 1.1 : kind === 'derp' ? 1.04 : kind === 'gold' ? 1.06 : rnd(.94, 1.02),
+      ground: !!c.ground, kind, hp: kind === 'helmet' ? 2 : kind === 'queen' ? 3 : 1, helmet: kind === 'helmet', sz: kind === 'queen' ? 1.5 : 1,
+      size: kind === 'queen' ? 1.5 : kind === 'mama' ? 1.1 : kind === 'derp' ? 1.04 : kind === 'gold' ? 1.06 : rnd(.94, 1.02),
       sleep: kind === 'sleepy', hit: false, state: 'idle', ph: Math.random() * 6, blink: rnd(1, 4), px: c.x, py: c.y,
       vx: 0, vy: 0, spin: 0, vs: 0, sc: 1, alpha: 1, wt: 0, ht: 0, aimed: false, wasAimed: false, target: true, zt: rnd(0, 1),
       pu: [{ x: 0, y: 0, vx: 0, vy: 0 }, { x: 0, y: 0, vx: 0, vy: 0 }], tongue: rnd(3, 8)
@@ -574,12 +651,14 @@ function loadLevel(i, quiet) {
   li = i; L = LEVELS[i];
   world = worldOf(i); Snd.world = world;
   chickens = buildChickens(L.chickens, i);
-  LV = { blocks: L.blocks || [], maxB: L.maxB || 2, bubbles: (L.bubbles || []).map(b => ({ ...b, taken: false, ph: rnd(0, 6) })) };
+  LV = { blocks: (L.blocks || []).map(b => ({ ...b })), pads: (L.pads || []).map(p => ({ ...p, hitT: 0 })), portals: L.portals || [], maxB: L.maxB || 6,
+        bubbles: (L.bubbles || []).map(b => ({ ...b, taken: false, ph: rnd(0, 6) })) };
+  launch = { x: L.launcher.x, y: L.launcher.y, block: null }; launchSpear = null; streak = 0; goldenNext = false;
   for (const c of chickens) {
     if (L.type === 'color') c.target = c.color === L.goal;
     else if (L.type === 'shape') c.target = c.shape === L.goal;
     else c.target = true;
-    if (world === 2 && c.kind !== 'gold' && c.kind !== 'helmet' && Math.random() < .45) c.sleep = true;
+    if (world >= 2 && c.kind !== 'gold' && c.kind !== 'queen' && c.kind !== 'helmet' && Math.random() < .45) c.sleep = true;
   }
   spearsLeft = L.spears; used = 0; hitCount = 0; score = 0; comboN = 0; bestCombo = 0;
   spears = []; stuckSpears = []; parts = []; texts = []; banners = []; eggs = []; chicks = []; rings = [];
@@ -596,8 +675,7 @@ function loadLevel(i, quiet) {
     Voice.stop();
     if (i % 6 === 0) Voice.say('world' + (world + 1), { queue: true });
     Voice.say('intro_' + (L.type === 'all' ? 'all' : L.goal), { queue: true });
-    if (L.say) Voice.say(L.say, { queue: true });
-    if (i === 1) Voice.say('power', { queue: true });
+    for (const k of L.say || []) Voice.say(k, { queue: true });
     if (L.hint) Voice.say('hint', { queue: true });
   }
 }
@@ -654,7 +732,8 @@ function goLevels() {
 function startLevel(i) { screen = 'play'; show(null); $('hud').hidden = false; loadLevel(i); resize(); }
 function demo() {
   L = LEVELS[10]; world = 0; Snd.world = 0;
-  chickens = buildChickens(L.chickens, 3); LV = { blocks: [], bubbles: [], maxB: 2 };
+  chickens = buildChickens(L.chickens, 3); LV = { blocks: [], bubbles: [], pads: (L.pads || []).map(p => ({ ...p, hitT: 0 })), portals: [], maxB: L.maxB || 6 };
+  launch = { x: L.launcher.x, y: L.launcher.y, block: null }; launchSpear = null; goldenNext = false;
   spears = []; stuckSpears = []; texts = []; banners = []; slots = []; eggs = []; chicks = []; rings = [];
   for (const c of chickens) c.target = true;
   phase = 'demo'; setupAmbient(); sceneKey = '';
@@ -663,8 +742,10 @@ function demo() {
 function win() {
   phase = 'done';
   const st = used <= L.par ? 3 : used <= L.par + 1 ? 2 : 1;
-  const bonus = spearsLeft * 250;
+  const perfect = used <= L.par;
+  const bonus = spearsLeft * 250 + (perfect ? 1000 : 0);
   score += bonus; updateScore(true);
+  if (perfect) { Voice.say('perfect', { queue: true }); popText(200, 300, 'PERFEITO! +1000', '#ffd23f', 34); }
   if ((Save.d.stars[li] || 0) < st) Save.d.stars[li] = st;
   const newBest = score > (Save.d.best[li] || 0);
   if (newBest) Save.d.best[li] = score;
@@ -680,7 +761,7 @@ function win() {
     $('resTitle').textContent = ['Muito bem!', 'Incrível!', 'Parabéns!'][st - 1];
     $('resEmoji').textContent = L.type === 'word' ? (WORD_EMOJI[L.goal] || '🎉') : (bestCombo >= 3 ? '🔥' : '🐔');
     $('resMsg').textContent = last ? msg + ' Você terminou todas as fases!' : msg;
-    $('resScore').innerHTML = `Pontos: <b>${score}</b>${bonus ? ` (+${bonus} lanças sobrando)` : ''}<br>${bestCombo >= 2 ? 'Maior combo: x' + bestCombo + ' · ' : ''}${newBest ? '🏆 Novo recorde!' : 'Recorde: ' + Save.d.best[li]}`;
+    $('resScore').innerHTML = `Pontos: <b>${score}</b>${bonus ? ` (+${bonus} de bônus)` : ''}<br>${bestCombo >= 2 ? 'Maior combo: x' + bestCombo + ' · ' : ''}${newBest ? '🏆 Novo recorde!' : 'Recorde: ' + Save.d.best[li]}`;
     const spans = $('resStars').children; for (const s of spans) s.classList.remove('on');
     $('resStars').hidden = false; $('bResNext').hidden = false;
     $('bResNext').textContent = last ? 'Fases ▶' : 'Próxima ▶';
@@ -712,8 +793,12 @@ cv.addEventListener('pointermove', e => { if (aiming) aim = toWorld(e); });
 cv.addEventListener('pointerup', e => { if (!aiming) return; aiming = false; aim = toWorld(e); Snd.chargeOff(); fire(); charge = 0; });
 cv.addEventListener('pointercancel', () => { aiming = false; charge = 0; Snd.chargeOff(); });
 
+function LP() {
+  if (launch.block) { const r = blockRect(launch.block, T); return { x: r.x + launch.ox, y: r.y + launch.oy }; }
+  return launch;
+}
 function aimAngle() {
-  const L0 = L.launcher;
+  const L0 = LP();
   if (phase === 'demo') return (150 + Math.sin(T * .7) * 10) * Math.PI / 180;
   return Math.atan2(aim.y - L0.y, aim.x - L0.x);
 }
@@ -722,24 +807,28 @@ function addSpear(x, y, ang, t, big, spd) {
 }
 function fire() {
   if (phase !== 'aim' || spearsLeft <= 0) return;
-  if (Math.hypot(aim.x - L.launcher.x, aim.y - L.launcher.y) < 22) return;
+  const L0 = LP();
+  if (Math.hypot(aim.x - L0.x, aim.y - L0.y) < 22) return;
   const a = aimAngle();
   const spd = SPEED * (1 + 1.4 * charge);
-  spears = []; addSpear(L.launcher.x, L.launcher.y, a, T, 0, spd);
-  spearsLeft--; used++; phase = 'flying'; comboN = 0;
+  spears = []; const main = addSpear(L0.x, L0.y, a, T, 0, spd); main.main = true;
+  if (goldenNext) { main.big = 1; main.magnet = 1; main.golden = 1; goldenNext = false; Snd.giant(); }
+  launchSpear = null;
+  spearsLeft--; used++; phase = 'flying'; comboN = 0; throwHits = 0;
   Snd.twang(); Snd.whoosh(charge > .6); Snd.whistleOn(); updateGoal();
   if (charge >= 1) {
     Snd.superShot(); shake = 9; flash = .3; Voice.say('super');
-    popText(L.launcher.x, L.launcher.y - 70, 'SUPER!', '#ff7a3d', 40);
-    burst(L.launcher.x, L.launcher.y, 16, 'star');
+    popText(L0.x, L0.y - 70, 'SUPER!', '#ff7a3d', 40);
+    burst(L0.x, L0.y, 16, 'star');
   }
-  burst(L.launcher.x + Math.cos(a) * 30, L.launcher.y + Math.sin(a) * 30, 8, 'spark');
-  rings.push({ x: L.launcher.x, y: L.launcher.y, r: 20, age: 0, life: .4, col: '#ffffff' });
+  burst(L0.x + Math.cos(a) * 30, L0.y + Math.sin(a) * 30, 8, 'spark');
+  rings.push({ x: L0.x, y: L0.y, r: 20, age: 0, life: .4, col: '#ffffff' });
 }
 
 /* ---------------- Eventos da lança ---------------- */
 function onSpear(sp, type, d) {
   if (type === 'bounce') {
+    if (d.pad) d.pad.hitT = 1;
     if (d.block) Snd.ping(); else Snd.ricochet();
     burst(d.x, d.y, 8, 'spark'); rings.push({ x: d.x, y: d.y, r: 6, age: 0, life: .35, col: d.block ? '#9fd3ff' : '#fff' });
     popText(d.x + (d.x < 200 ? 30 : -30), d.y, pick(['BOING!', 'TOING!', 'PLIM!']), '#9fd3ff', 20);
@@ -748,12 +837,36 @@ function onSpear(sp, type, d) {
     Snd.boiing();
     burst(d.x, d.y, 10, 'dust'); shake = Math.max(shake, sp.big ? 8 : 3);
     const s = { x: d.x, y: d.y, ang: Math.atan2(sp.dy, sp.dx), wob: 1, block: d.block || null, big: sp.big };
-    if (d.block) { s.ox = d.x - d.rect.x; s.oy = d.y - d.rect.y; }
+    const glass = d.block && d.block.kind === 'glass';
+    if (glass) {
+      d.block.broken = true; s.block = null; Snd.glass(); shake = Math.max(shake, 6);
+      for (let i = 0; i < 22; i++) parts.push({ kind: 'shard', x: d.rect.x + rnd(0, d.rect.w), y: d.rect.y + rnd(0, d.rect.h), vx: rnd(-120, 120), vy: rnd(-200, 40), life: rnd(.8, 1.4), age: 0, rot: rnd(0, 6), vr: rnd(-10, 10), ph: 0, r: rnd(4, 9), col: '' });
+      popText(d.x, d.y - 30, 'CRASH!', '#bfe9ff', 30);
+    } else if (d.block) { s.ox = d.x - d.rect.x; s.oy = d.y - d.rect.y; }
+    if (sp.confetti) confettiBlast(sp, d.x, d.y);
     stuckSpears.push(s);
+    if (sp.main) {
+      const pt = stickPoint(d);
+      launch = { x: pt.x, y: pt.y, block: s.block };
+      if (s.block) { launch.ox = s.ox; launch.oy = s.oy; }
+      launchSpear = s;
+    }
   } else if (type === 'end') {
     stuckSpears.push({ x: d.x, y: d.y, ang: Math.atan2(sp.dy, sp.dx), wob: 0, fall: true, vy: 0, a: 1, big: sp.big });
   } else if (type === 'hit') hitChicken(sp, d);
   else if (type === 'bubble') takeBubble(sp, d);
+  else if (type === 'portal') {
+    Snd.portal(); burst(d.fx, d.fy, 10, 'spark'); burst(d.x, d.y, 10, 'spark');
+    rings.push({ x: d.from.x, y: d.from.y, r: 10, age: 0, life: .5, col: '#7cc4ff' }); rings.push({ x: d.to.x, y: d.to.y, r: 10, age: 0, life: .5, col: '#ffb070' });
+    sp.trail = [];
+  }
+}
+function confettiBlast(sp, x, y) {
+  Snd.pop(); Snd.superShot(); shake = 10; flash = .4;
+  rings.push({ x, y, r: 20, age: 0, life: .6, col: '#ff8fb1' }); rings.push({ x, y, r: 40, age: 0, life: .7, col: '#ffd23f' });
+  for (let i = 0; i < 50; i++) { const a = rnd(0, 7), v = rnd(80, 260); parts.push({ kind: 'conf', x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: rnd(1, 1.8), age: 0, rot: rnd(0, 6), vr: rnd(-8, 8), ph: rnd(0, 6), r: rnd(4, 7), col: pick(['#e5533d', '#ffd23f', '#3b82f6', '#22c55e', '#a855f7', '#ff8fb1']) }); }
+  popText(x, y - 40, 'FESTA!', '#ff8fb1', 36);
+  for (const c of chickens) if (!c.hit && c.target && Math.hypot(c.px - x, c.py - y) < 110) hitChicken(sp, c);
 }
 
 function takeBubble(sp, b) {
@@ -768,6 +881,12 @@ function takeBubble(sp, b) {
   } else if (b.kind === 'giant') {
     sp.big = 1; Snd.giant(); Voice.say('sp_giant'); shake = 6;
     popText(p.x, p.y - 30, 'GIGANTE!', '#ffb3f0', 34);
+  } else if (b.kind === 'magnet') {
+    sp.magnet = 1; Snd.shing(); Voice.say('sp_magnet');
+    popText(p.x, p.y - 30, 'ÍMÃ!', '#ff7ad1', 34);
+  } else if (b.kind === 'confetti') {
+    sp.confetti = 1; Snd.bubble(); Voice.say('sp_confetti');
+    popText(p.x, p.y - 30, 'CONFETE!', '#ffd23f', 34);
   } else {
     spearsLeft++; Snd.coin(); Voice.say('sp_extra'); updateGoal();
     popText(p.x, p.y - 30, '+1 LANÇA', '#b6ff8a', 30);
@@ -783,8 +902,15 @@ function hitChicken(sp, c) {
     else Voice.chick('c_nhe');
     return;
   }
+  if (c.hp > 1 && c.kind === 'queen') {
+    c.hp--; c.state = 'dizzy'; c.wt = 0; Snd.clank(); Snd.cluck(); Voice.chick(pick(['c2', 'c11', 'c4'])); shake = Math.max(shake, 8);
+    burst(c.px, c.py - 20, 14, 'feather'); burst(c.px, c.py - 40, 8, 'star');
+    popText(c.px, c.py - 80, c.hp === 2 ? 'FALTAM 2!' : 'FALTA 1!', '#ffd23f', 30);
+    score += 150; updateScore(true); throwHits++;
+    return;
+  }
   if (c.hp > 1) {
-    c.hp--; c.helmet = false; c.state = 'dizzy'; c.wt = 0; c.sleep = false;
+    c.hp--; c.helmet = false; c.state = 'dizzy'; c.wt = 0; c.sleep = false; throwHits++;
     Snd.clank(); shake = Math.max(shake, 5);
     parts.push({ kind: 'helmet', x: c.px, y: c.py - 30, vx: sp.dx * 160 + rnd(-40, 40), vy: -260, rot: 0, vr: rnd(-10, 10), age: 0, life: 1.6, r: 1, ph: 0, col: '' });
     burst(c.px, c.py - 30, 10, 'star');
@@ -792,10 +918,14 @@ function hitChicken(sp, c) {
     Voice.say('helmet_off');
     return;
   }
-  c.hit = true; c.state = 'fly'; c.ht = 0; c.sleep = false; hitCount++; comboN++;
+  c.hit = true; c.state = 'fly'; c.ht = 0; c.sleep = false; hitCount++; comboN++; throwHits++;
+  if (sp.b > 0) {
+    score += 200; popText(c.px - 40, c.py - 20, 'TABELA! +200', '#7cf0ff', 22);
+    if (T - trickSaid > 3) { Voice.say('trick', { queue: true }); trickSaid = T; }
+  }
   bestCombo = Math.max(bestCombo, comboN);
   c.vx = sp.dx * 90 + rnd(-50, 50); c.vy = -140; c.vs = rnd(-4, 4);
-  const pts = (c.kind === 'gold' ? 500 : 100) * comboN;
+  const pts = (c.kind === 'gold' ? 500 : c.kind === 'queen' ? 1000 : 100) * comboN;
   score += pts; updateScore(true);
   Snd.cluck(); Snd.pop(); Voice.chick(); shake = Math.max(shake, sp.big ? 10 : 7);
   burst(c.px, c.py, 18, 'feather'); burst(c.px, c.py, 8, 'star');
@@ -857,7 +987,7 @@ function update(rdt) {
   T += dt;
   if (aiming && phase === 'aim') {
     holdT += rdt; charge = Math.min(1, holdT / .9); Snd.chargeSet(charge);
-    if (charge >= 1 && !chargeFull) { chargeFull = true; Snd.powerFull(); burst(L.launcher.x, L.launcher.y, 10, 'spark'); }
+    if (charge >= 1 && !chargeFull) { chargeFull = true; Snd.powerFull(); burst(LP().x, LP().y, 10, 'spark'); }
   }
   for (const c of clouds) { c.x += c.v * rdt; if (c.x > 1.2) c.x = -.2; }
   let anyAimedNew = null;
@@ -900,6 +1030,13 @@ function update(rdt) {
     if (spears.every(s => s.done)) {
       phase = 'wait'; waitT = .75; Snd.whistleOff();
       if (comboN >= 2) Voice.say('combo' + Math.min(5, comboN), { queue: targetsLeft() > 0 });
+      if (throwHits > 0) streak++; else streak = 0;
+      if (streak >= 2 && targetsLeft() > 0) {
+        const bonus = 100 * streak; score += bonus; updateScore(true);
+        banners.push({ n: streak, age: 0, life: 1.3, kind: 'streak' }); Snd.combo(streak);
+        if (streak % 3 === 0) { goldenNext = true; Voice.say('golden', { queue: true }); popText(200, 380, 'LANÇA DOURADA!', '#ffd23f', 30); }
+        else if (comboN < 2) Voice.say('streak', { queue: true });
+      }
     }
   } else if (phase === 'wait') {
     waitT -= dt;
@@ -927,7 +1064,7 @@ function update(rdt) {
     p.age += dt;
     if (p.kind === 'feather') { p.vx *= (1 - 2.2 * dt); p.vy = p.vy * (1 - 2.2 * dt) + 70 * dt; p.x += (p.vx + Math.sin(T * 4 + p.ph) * 25) * dt; p.y += p.vy * dt; }
     else if (p.kind === 'conf') { p.x += (p.vx + Math.sin(T * 3 + p.ph) * 30) * dt; p.y += p.vy * dt; }
-    else if (p.kind === 'coin' || p.kind === 'helmet' || p.kind === 'shell' || p.kind === 'drop') { p.vy += 600 * dt; p.x += p.vx * dt; p.y += p.vy * dt; }
+    else if (p.kind === 'coin' || p.kind === 'helmet' || p.kind === 'shell' || p.kind === 'drop' || p.kind === 'shard') { p.vy += 600 * dt; p.x += p.vx * dt; p.y += p.vy * dt; }
     else if (p.kind === 'z') { p.x += (p.vx + Math.sin(p.age * 3) * 10) * dt; p.y += p.vy * dt; }
     else if (p.kind === 'sweat') { p.y += 40 * dt; }
     else { p.vx *= (1 - 3 * dt); p.vy *= (1 - 3 * dt); p.x += p.vx * dt; p.y += p.vy * dt; }
@@ -975,6 +1112,11 @@ function buildScene() {
   for (const [x, y] of [[150, H - 230], [270, H - 215], [40, H - 200]]) { c.beginPath(); c.moveTo(x - 14, y + 16); c.lineTo(x, y); c.lineTo(x + 14, y + 16); c.lineTo(x + 6, y + 12); c.lineTo(x, y + 18); c.lineTo(x - 6, y + 12); c.fill(); }
   c.fillStyle = w.hill1; c.beginPath(); c.ellipse(90, H - 40, 190, 100, 0, Math.PI, 0); c.fill();
   c.fillStyle = w.hill2; c.beginPath(); c.ellipse(330, H - 40, 200, 80, 0, Math.PI, 0); c.fill();
+  if (w.time === 'rainbow') {
+    const cols = ['#ff6b6b', '#ffa94d', '#ffe066', '#69db7c', '#4dabf7', '#9775fa'];
+    cols.forEach((col, i) => { c.strokeStyle = col; c.globalAlpha = .55; c.lineWidth = 9; c.beginPath(); c.arc(200, H - 60, 230 - i * 9, Math.PI, 0); c.stroke(); });
+    c.globalAlpha = 1;
+  }
   tree(c, 40, H - 112, .9, w.tree, w); tree(c, 130, H - 128, 1, w.tree, w); tree(c, 165, H - 115, .75, w.tree, w); tree(c, 250, H - 100, .8, w.tree, w);
   const bx = 282, by = H - 112, night = w.time === 'night';
   c.fillStyle = night ? '#8a3a3a' : '#c94a3a'; c.fillRect(bx + 54, by + 6, 22, 56);
@@ -1060,9 +1202,48 @@ function drawFrame() {
   for (const [x, y] of [[6, 30], [6, H / 2], [6, H - 30], [W - 6, 30], [W - 6, H / 2], [W - 6, H - 30], [W / 2, 6], [W / 2, H - 6]]) { ctx.beginPath(); ctx.arc(x, y, 2.6, 0, 7); ctx.fill(); ctx.stroke(); }
   ctx.restore();
 }
+function drawPads() {
+  for (const p of LV.pads) {
+    p.hitT = Math.max(0, p.hitT - .05);
+    const k = p.hitT, o = k * 3 * Math.sin(T * 60);
+    ctx.save();
+    let x, y, w, h;
+    if (p.side === 'L') { x = WALL - 4 + o; y = Math.max(p.a, WALL); w = 10; h = Math.min(p.b, H - WALL) - y; }
+    else if (p.side === 'R') { x = W - WALL - 6 + o; y = Math.max(p.a, WALL); w = 10; h = Math.min(p.b, H - WALL) - y; }
+    else if (p.side === 'T') { x = Math.max(p.a, WALL); y = WALL - 4 + o; w = Math.min(p.b, W - WALL) - x; h = 10; }
+    else { x = Math.max(p.a, WALL); y = H - WALL - 6 + o; w = Math.min(p.b, W - WALL) - x; h = 10; }
+    rr(ctx, x, y, w, h, 5); ctx.fillStyle = k > 0 ? '#bdeaff' : '#5ec8ff'; ctx.fill();
+    ctx.save(); ctx.clip(); ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 4;
+    const vert = p.side === 'L' || p.side === 'R';
+    for (let i = -20; i < (vert ? h : w) + 20; i += 14) { ctx.beginPath(); if (vert) { ctx.moveTo(x, y + i); ctx.lineTo(x + w, y + i + 8); } else { ctx.moveTo(x + i, y + h); ctx.lineTo(x + i + 8, y); } ctx.stroke(); }
+    ctx.restore();
+    rr(ctx, x, y, w, h, 5); ctx.strokeStyle = '#1f6fa8'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.restore();
+  }
+}
+function drawPortals(pt) {
+  for (const [q, col, dk] of [[pt.a, '#3b82f6', '#0b2a66'], [pt.b, '#ff8a3d', '#6b2a00']]) {
+    ctx.save(); ctx.translate(q.x, q.y);
+    const g = ctx.createRadialGradient(0, 0, 2, 0, 0, PORT_R + 6); g.addColorStop(0, dk); g.addColorStop(.7, col); g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, PORT_R + 6, 0, 7); ctx.fill();
+    ctx.rotate(T * (col === '#3b82f6' ? 3 : -3));
+    ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 2.5; ctx.setLineDash([6, 6]);
+    ctx.beginPath(); ctx.arc(0, 0, PORT_R - 2, 0, 7); ctx.stroke(); ctx.beginPath(); ctx.arc(0, 0, PORT_R - 10, 0, 7); ctx.stroke();
+    ctx.restore();
+  }
+}
 function drawBlock(b) {
+  if (b.broken) return;
   const r = blockRect(b, T);
   ctx.save();
+  if (b.kind === 'glass') {
+    rr(ctx, r.x, r.y, r.w, r.h, 4); ctx.fillStyle = 'rgba(190,235,255,.45)'; ctx.fill();
+    ctx.save(); ctx.clip(); ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 3;
+    for (let x = r.x - 10; x < r.x + r.w; x += 46) { ctx.beginPath(); ctx.moveTo(x, r.y + r.h); ctx.lineTo(x + r.h, r.y); ctx.moveTo(x + 10, r.y + r.h); ctx.lineTo(x + 10 + r.h * .6, r.y + r.h * .4); ctx.stroke(); }
+    ctx.restore();
+    rr(ctx, r.x, r.y, r.w, r.h, 4); ctx.strokeStyle = '#7fc7ee'; ctx.lineWidth = 2.5; ctx.stroke();
+    ctx.restore(); return;
+  }
   if (b.kind === 'wood') {
     ctx.fillStyle = 'rgba(0,0,0,.15)'; rr(ctx, r.x + 3, r.y + 5, r.w, r.h, 5); ctx.fill();
     const g = ctx.createLinearGradient(0, r.y, 0, r.y + r.h); g.addColorStop(0, '#dda15e'); g.addColorStop(1, '#b4743a');
@@ -1094,9 +1275,9 @@ function drawBubble(b) {
   ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, y, r, 0, 7); ctx.fill();
   ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 2; ctx.stroke();
   ctx.font = '20px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(b.kind === 'triple' ? '🔱' : b.kind === 'giant' ? '💪' : '➕', p.x, y + 1);
+  ctx.fillText({ triple: '🔱', giant: '💪', magnet: '🧲', confetti: '🎉' }[b.kind] || '➕', p.x, y + 1);
   ctx.font = '700 11px Fredoka, sans-serif'; ctx.lineWidth = 3; ctx.strokeStyle = '#2d5f8a'; ctx.fillStyle = '#fff';
-  const lab = b.kind === 'triple' ? 'TRIPLA' : b.kind === 'giant' ? 'GIGANTE' : '+1 LANÇA';
+  const lab = { triple: 'TRIPLA', giant: 'GIGANTE', magnet: 'ÍMÃ', confetti: 'CONFETE' }[b.kind] || '+1 LANÇA';
   ctx.strokeText(lab, p.x, y + r + 9); ctx.fillText(lab, p.x, y + r + 9);
   ctx.restore();
 }
@@ -1152,7 +1333,7 @@ function drawChicken(c) {
   } else { rot = c.spin; if (c.ht < .12) { sx = 1.35; sy = .7; } }
   const sc = c.size * (fly ? c.sc : 1);
   ctx.translate(c.px, c.py + bob); ctx.rotate(rot); ctx.scale(sc * sx, sc * sy);
-  const gold = c.kind === 'gold';
+  const gold = c.kind === 'gold' || c.kind === 'queen';
   const O = gold ? '#8a5a00' : '#b06a00';
   const expr = fly ? 'yay' : c.state === 'wrong' ? 'tongue' : c.state === 'dizzy' ? 'dizzy' : c.sleep ? 'sleep' : c.aimed ? 'scared' : 'idle';
   if (gold) { const ag = ctx.createRadialGradient(0, 0, 10, 0, 0, 52); ag.addColorStop(0, 'rgba(255,230,120,.55)'); ag.addColorStop(1, 'rgba(255,230,120,0)'); ctx.fillStyle = ag; ctx.beginPath(); ctx.arc(0, 0, 52, 0, 7); ctx.fill(); }
@@ -1233,6 +1414,11 @@ function drawChicken(c) {
     ctx.beginPath(); ctx.moveTo(10, -30); ctx.lineTo(18, -38); ctx.lineTo(18, -24); ctx.closePath(); ctx.fill(); ctx.stroke();
     ctx.beginPath(); ctx.arc(10, -30, 3, 0, 7); ctx.fill(); ctx.stroke();
   }
+  if (c.kind === 'queen') {
+    ctx.fillStyle = '#e5533d'; ctx.strokeStyle = '#7a1f1f'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(-22, 20); ctx.quadraticCurveTo(-30, 34, -18, 36); ctx.lineTo(18, 36); ctx.quadraticCurveTo(30, 34, 22, 20); ctx.fill(); ctx.stroke();
+    for (let i = 0; i < c.hp; i++) { ctx.fillStyle = '#ff5a8a'; ctx.beginPath(); ctx.arc(-10 + i * 10, -54, 3.5, 0, 7); ctx.fill(); }
+  }
   if (gold) {
     ctx.fillStyle = '#ffd23f'; ctx.strokeStyle = '#8a5a00'; ctx.lineWidth = 1.8;
     ctx.beginPath(); ctx.moveTo(-11, -28); ctx.lineTo(-11, -42); ctx.lineTo(-5, -35); ctx.lineTo(0, -45); ctx.lineTo(5, -35); ctx.lineTo(11, -42); ctx.lineTo(11, -28); ctx.closePath(); ctx.fill(); ctx.stroke();
@@ -1308,8 +1494,8 @@ function drawSpear(x, y, ang, a = 1, big = 0) {
   ctx.restore();
 }
 function drawPreview() {
-  const L0 = L.launcher, ang = aimAngle();
-  const sp = newSpear(L0.x, L0.y, ang, T);
+  const L0 = LP(), ang = aimAngle();
+  const sp = newSpear(L0.x, L0.y, ang, T); if (goldenNext) { sp.big = 1; sp.magnet = 1; }
   const pts = [{ x: sp.x, y: sp.y }], bub = [];
   for (const c of chickens) c.aimed = false;
   const live = chickens.filter(c => !c.hit);
@@ -1333,7 +1519,7 @@ function drawPreview() {
   ctx.restore();
 }
 function drawLauncher() {
-  const L0 = L.launcher;
+  const L0 = LP();
   ctx.save(); ctx.translate(L0.x, L0.y);
   const g = ctx.createRadialGradient(0, 0, 4, 0, 0, 32); g.addColorStop(0, 'rgba(255,255,255,.7)'); g.addColorStop(1, 'rgba(255,255,255,.1)');
   ctx.beginPath(); ctx.arc(0, 0, 30, 0, 7); ctx.fillStyle = g; ctx.fill();
@@ -1353,6 +1539,7 @@ function drawLauncher() {
       const ly = L0.y + (L0.y > 560 ? -58 : 62);
       ctx.strokeText(lab, L0.x, ly); ctx.fillText(lab, L0.x, ly); ctx.restore();
     }
+    if (goldenNext) { ctx.save(); ctx.globalAlpha = .45 + .25 * Math.sin(T * 8); ctx.fillStyle = '#ffd23f'; ctx.beginPath(); ctx.arc(L0.x, L0.y, 34, 0, 7); ctx.fill(); ctx.restore(); }
     const pull = 36 + hov - charge * 22, tr = charge >= 1 ? rnd(-1.5, 1.5) : 0;
     drawSpear(L0.x + Math.cos(a) * pull + tr, L0.y + Math.sin(a) * pull + tr, a);
     for (let i = 0; i < 3; i++) { const sa = T * 3 + i * 2.1; ctx.fillStyle = 'rgba(255,255,255,.8)'; shapePath('star', L0.x + Math.cos(sa) * 26, L0.y + Math.sin(sa) * 26, 3); ctx.fill(); }
@@ -1360,7 +1547,7 @@ function drawLauncher() {
 }
 function drawHint() {
   if (hintDone || phase !== 'aim' || screen !== 'play') return;
-  const c = chickens[0], L0 = L.launcher, k = (T * .6) % 1;
+  const c = chickens[0], L0 = LP(), k = (T * .6) % 1;
   const e = k < .7 ? k / .7 : 1;
   const x = L0.x + (c.px - L0.x) * .6 * e + 10, y = L0.y + (c.py - L0.y) * .6 * e + 10;
   ctx.save(); ctx.globalAlpha = k < .85 ? 1 : (1 - k) / .15;
@@ -1381,6 +1568,7 @@ function drawParts() {
     else if (p.kind === 'coin') { ctx.scale(Math.cos(p.age * 12) || .1, 1); ctx.beginPath(); ctx.arc(0, 0, 6, 0, 7); ctx.fillStyle = '#ffd23f'; ctx.fill(); ctx.strokeStyle = '#b8860b'; ctx.lineWidth = 1.5; ctx.stroke(); ctx.fillStyle = '#fff3a0'; ctx.fillRect(-1, -3, 2, 6); }
     else if (p.kind === 'dust') { ctx.beginPath(); ctx.arc(0, 0, p.r * (1 + p.age * 3), 0, 7); ctx.fillStyle = p.col; ctx.globalAlpha = a * .6; ctx.fill(); }
     else if (p.kind === 'shell') { ctx.fillStyle = '#f1e4cc'; ctx.beginPath(); ctx.moveTo(-4, 0); ctx.lineTo(0, -4); ctx.lineTo(4, 0); ctx.lineTo(2, 3); ctx.closePath(); ctx.fill(); }
+    else if (p.kind === 'shard') { ctx.fillStyle = 'rgba(200,240,255,.85)'; ctx.strokeStyle = '#7fc7ee'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(-p.r, 0); ctx.lineTo(0, -p.r * .6); ctx.lineTo(p.r * .7, p.r * .4); ctx.closePath(); ctx.fill(); ctx.stroke(); }
     else if (p.kind === 'drop') { ctx.fillStyle = 'rgba(200,240,255,.9)'; ctx.beginPath(); ctx.arc(0, 0, 2.5, 0, 7); ctx.fill(); }
     else if (p.kind === 'z') { ctx.rotate(-p.rot); ctx.font = `700 ${12 + p.age * 8}px Fredoka, sans-serif`; ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#4a5a8a'; ctx.lineWidth = 3; ctx.strokeText('z', 0, 0); ctx.fillText('z', 0, 0); }
     else if (p.kind === 'sweat') { ctx.rotate(-p.rot); ctx.fillStyle = '#7fd0ff'; ctx.beginPath(); ctx.moveTo(0, -6); ctx.quadraticCurveTo(5, 2, 0, 4); ctx.quadraticCurveTo(-5, 2, 0, -6); ctx.fill(); }
@@ -1424,7 +1612,7 @@ function drawTexts() {
     const g = ctx.createLinearGradient(-120, 0, 120, 0);
     ['#ff4d4d', '#ffb400', '#ffe94d', '#4dd96b', '#4db8ff', '#b06bff'].forEach((c2, i) => g.addColorStop(i / 5, c2));
     ctx.font = '700 38px Fredoka, sans-serif'; ctx.lineWidth = 9; ctx.strokeStyle = '#4a2c17';
-    const nm = COMBO_NAMES[Math.min(5, b.n)];
+    const nm = b.kind === 'streak' ? 'SEQUÊNCIA' : COMBO_NAMES[Math.min(5, b.n)];
     ctx.strokeText(nm, 0, -14); ctx.fillStyle = g; ctx.fillText(nm, 0, -14);
     ctx.font = '700 54px Fredoka, sans-serif'; ctx.strokeText('x' + b.n, 0, 32); ctx.fillStyle = '#fff'; ctx.fillText('x' + b.n, 0, 32);
     ctx.restore();
@@ -1443,7 +1631,9 @@ function draw() {
   for (const b of LV.blocks) drawBlock(b);
   for (const b of LV.bubbles) drawBubble(b);
   if (phase === 'aim' || phase === 'demo') drawPreview(); else for (const c of chickens) c.aimed = false;
+  for (const pt of LV.portals) drawPortals(pt);
   for (const s of stuckSpears) {
+    if (s === launchSpear && phase === 'aim') continue;
     let x = s.x, y = s.y;
     if (s.block) { const r = blockRect(s.block, T); x = r.x + s.ox; y = r.y + s.oy; }
     drawSpear(x, y, s.ang + Math.sin(T * 50) * .1 * s.wob, s.fall ? Math.max(0, s.a) : 1, s.big);
@@ -1463,10 +1653,12 @@ function draw() {
       ctx.beginPath(); ctx.moveTo(tr[i - 1].x, tr[i - 1].y); ctx.lineTo(tr[i].x, tr[i].y); ctx.stroke();
     }
     ctx.restore();
+    if (sp.golden || sp.magnet) { ctx.save(); ctx.globalAlpha = .5 + .3 * Math.sin(T * 20); ctx.fillStyle = sp.golden ? '#ffd23f' : '#ff7ad1'; ctx.beginPath(); ctx.arc(sp.x, sp.y, sp.big ? 26 : 16, 0, 7); ctx.fill(); ctx.restore(); }
     drawSpear(sp.x, sp.y, Math.atan2(sp.dy, sp.dx), 1, sp.big);
   }
   ctx.restore();
   drawFrame();
+  drawPads();
   for (const c of chickens) if (c.state === 'fly') drawChicken(c);
   drawParts(); drawTexts(); drawHint();
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
