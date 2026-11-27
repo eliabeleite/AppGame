@@ -1,0 +1,8 @@
+{
+  "appId": "com.lancapenas.jogo",
+  "appName": "Lança-Penas",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#6cc7f5"
+  }
+}

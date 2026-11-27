@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Lança-Penas</string>
+    <string name="title_activity_main">Lança-Penas</string>
+    <string name="package_name">com.lancapenas.jogo</string>
+    <string name="custom_url_scheme">com.lancapenas.jogo</string>
+</resources>

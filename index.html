@@ -88,6 +88,10 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
 .stk canvas{width:100%;max-width:90px;height:auto;aspect-ratio:1}
 .stk.off{background:#ece4d3;color:#a99c83}
 #albCount{margin:0 0 10px;font-weight:600}
+.shopw{font-size:44px;letter-spacing:6px;margin:2px 0 4px}
+.shopl{text-align:left;margin:6px auto 4px;padding-left:22px;max-width:300px;font-size:16px;font-weight:600;line-height:1.45}
+.shopm{font-size:15px;font-weight:600;margin:6px 0 0;min-height:1.2em}
+.lockb{font-size:12px;font-weight:700;background:var(--barn);color:#fff;border-radius:8px;padding:2px 8px;margin-left:auto}
 .namef{display:flex;flex-direction:column;gap:6px;text-align:left}
 .namef label{font-weight:600;font-size:15px}
 .namef label small{font-weight:500;opacity:.7}
@@ -158,6 +162,43 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
   </div>
 </div>
 
+<div id="shopOv" class="ov dim" hidden>
+  <div class="card">
+    <h2>Jogo completo</h2>
+    <div class="shopw">🌅 🌙 🌈</div>
+    <ul class="shopl">
+      <li>3 mundos novos e 18 fases</li>
+      <li>Portais, vidro, lança ímã e a galinha rainha</li>
+      <li>Todas as 24 figurinhas do álbum</li>
+      <li>Sem anúncios. Pagamento único.</li>
+    </ul>
+    <p id="shopMsg" class="shopm"></p>
+    <div class="row">
+      <button class="big sm" id="bShopBuy">Desbloquear</button>
+    </div>
+    <div class="row">
+      <button class="big alt sm" id="bShopBack">◀ Voltar</button>
+      <button class="big alt sm" id="bShopRestore">Restaurar compra</button>
+    </div>
+  </div>
+</div>
+
+<div id="gateOv" class="ov dim" hidden>
+  <div class="card">
+    <h2>Área dos pais</h2>
+    <p class="shopm">Para continuar, um adulto precisa responder:</p>
+    <form id="gateForm" class="namef">
+      <label for="gateAns" id="gateQ">Quanto é 7 × 8?</label>
+      <input id="gateAns" inputmode="numeric" pattern="[0-9]*" maxlength="3" autocomplete="off">
+      <p id="gateErr" class="shopm" hidden>Resposta errada. Tente de novo.</p>
+      <div class="row">
+        <button type="button" class="big alt sm" id="bGateBack">Cancelar</button>
+        <button type="submit" class="big sm">Continuar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div id="album" class="ov dim" hidden>
   <div class="card levels-card">
     <h2>Álbum de figurinhas</h2>
@@ -204,7 +245,7 @@ const LINES = /*LINES-START*/{
 "combo2":"Combo!","combo3":"Super combo!","combo4":"Mega combo!","combo5":"Combo galáctico!",
 "sp_triple":"Lança tripla!","sp_giant":"Lança gigante!","sp_extra":"Ganhou uma lança extra!",
 "gold":"Olha a galinha dourada! Ela vale muitos pontos!","helmet":"Essa galinha tem capacete! Precisa acertar duas vezes!","helmet_off":"Plim! Caiu o capacete!",
-"hint":"Arraste o dedo para mirar e solte para lançar!","power":"Segure o dedo mais tempo para a lança ficar super rápida!","super":"Super lançamento!","world4":"Uau! Chegamos ao mundo do arco-íris! Agora é desafio!","say_stick":"A lança fica presa onde bater. Depois você atira de lá!","say_pad":"Só as almofadas azuis fazem a lança quicar!","say_glass":"Quebre o vidro com a lança!","say_portal":"Entre no portal azul e saia no laranja!","say_magnet":"Pegue a bolha do ímã. A lança vai atrás das galinhas!","say_confetti":"A bolha de confete faz a lança explodir em festa!","say_ride":"Acerte a caixa que anda e atire de cima dela!","sp_magnet":"Lança ímã!","sp_confetti":"Lança confete!","streak":"Sequência!","golden":"Ganhou a lança dourada!","trick":"Tabela!","perfect":"Perfeito!","boss":"Cuidado com a galinha rainha! Ela precisa de três lançadas!","intro_BOLA":"Vamos formar a palavra bola!","spell_BOLA":"Bê, ó, éle, á. Bola! Muito bem!","L_B":"Bê!","tip":"Olha a dica! Mire onde está a mãozinha!","help":"Ganhou lanças extras para tentar de novo!","sticker":"Oba! Você ganhou uma figurinha nova!",
+"hint":"Arraste o dedo para mirar e solte para lançar!","power":"Segure o dedo mais tempo para a lança ficar super rápida!","super":"Super lançamento!","world4":"Uau! Chegamos ao mundo do arco-íris! Agora é desafio!","say_stick":"A lança fica presa onde bater. Depois você atira de lá!","say_pad":"Só as almofadas azuis fazem a lança quicar!","say_glass":"Quebre o vidro com a lança!","say_portal":"Entre no portal azul e saia no laranja!","say_magnet":"Pegue a bolha do ímã. A lança vai atrás das galinhas!","say_confetti":"A bolha de confete faz a lança explodir em festa!","say_ride":"Acerte a caixa que anda e atire de cima dela!","sp_magnet":"Lança ímã!","sp_confetti":"Lança confete!","streak":"Sequência!","golden":"Ganhou a lança dourada!","trick":"Tabela!","perfect":"Perfeito!","boss":"Cuidado com a galinha rainha! Ela precisa de três lançadas!","intro_BOLA":"Vamos formar a palavra bola!","spell_BOLA":"Bê, ó, éle, á. Bola! Muito bem!","L_B":"Bê!","tip":"Olha a dica! Mire onde está a mãozinha!","help":"Ganhou lanças extras para tentar de novo!","sticker":"Oba! Você ganhou uma figurinha nova!","adult":"Para jogar os outros mundos, chame um adulto!","thanks":"Oba! Agora todos os mundos estão liberados!",
 "say_wall":"A caixa está no caminho. Jogue na parede!","say_one":"Uma lança só pode pegar todas!","say_bounce":"O pula-pula azul faz a lança quicar!",
 "say_final":"Última fase! Você consegue!","say_combo":"Acerte as duas com uma lança só!","say_triple":"Acerte a bolha para ganhar uma lança tripla!","say_giant":"Acerte a bolha para a lança ficar gigante!",
 "world1":"Bem-vindo à fazenda!","world2":"Olha que lindo o pôr do sol!","world3":"Ficou de noite! Cuidado com as galinhas dorminhocas!",
@@ -444,6 +485,10 @@ const WORLDS = [
 ];
 const worldOf = i => Math.min(3, Math.floor(i / 6));
 
+/* ---------------- Edição (web = completo; app da loja = mundo 1 grátis + compra única) ---------------- */
+const EDITION = window.LP_EDITION || 'full';
+const PRODUCT_ID = 'jogo_completo';
+
 /* ---------------- Salvamento ---------------- */
 const Save = {
   k: 'lancapenas.v3', d: { stars: {}, best: {}, music: true, sound: true, kid: '', kidSay: '' },
@@ -451,6 +496,55 @@ const Save = {
   save() { try { localStorage.setItem(this.k, JSON.stringify(this.d)); } catch (e) {} }
 };
 Save.load();
+
+const Shop = {
+  ready: false, owned: EDITION !== 'store', price: '', busy: false,
+  init() {
+    if (EDITION !== 'store') return;
+    this.owned = !!Save.d.owned;
+    document.addEventListener('deviceready', () => this.setup(), false);
+  },
+  setup() {
+    const S = window.CdvPurchase; if (!S) return;
+    const { store, ProductType, Platform } = S;
+    store.register([{ id: PRODUCT_ID, type: ProductType.NON_CONSUMABLE, platform: Platform.GOOGLE_PLAY }]);
+    store.when()
+      .productUpdated(p => { if (p.id === PRODUCT_ID) { this.price = (p.pricing && p.pricing.price) || ''; this.check(p); this.paint(); } })
+      .approved(t => t.verify())
+      .verified(r => r.finish())
+      .finished(() => this.check(store.get(PRODUCT_ID, Platform.GOOGLE_PLAY)))
+      .receiptUpdated(() => this.check(store.get(PRODUCT_ID, Platform.GOOGLE_PLAY)));
+    store.error(e => { this.busy = false; this.msg('A loja respondeu com erro. Tente de novo em instantes.'); });
+    store.initialize([Platform.GOOGLE_PLAY]).then(() => { this.ready = true; this.check(store.get(PRODUCT_ID, Platform.GOOGLE_PLAY)); this.paint(); });
+  },
+  check(p) {
+    if (!p || !p.owned || this.owned) return;
+    this.owned = true; Save.d.owned = true; Save.save(); this.busy = false;
+    Snd.win(); confetti(); Voice.say('thanks');
+    if (screen === 'shop' || screen === 'gate') goLevels();
+  },
+  buy() {
+    const S = window.CdvPurchase;
+    if (!S || !this.ready) { this.msg('Loja indisponível. Verifique a internet e tente de novo.'); return; }
+    const p = S.store.get(PRODUCT_ID, S.Platform.GOOGLE_PLAY), offer = p && p.getOffer();
+    if (!offer) { this.msg('Produto não encontrado na loja.'); return; }
+    this.busy = true; this.msg('Abrindo o pagamento do Google Play…');
+    offer.order().then(err => {
+      this.busy = false;
+      if (err && err.code === S.ErrorCode.PAYMENT_CANCELLED) this.msg('Compra cancelada.');
+      else if (err) this.msg('Não deu certo: ' + (err.message || 'tente de novo.'));
+    });
+  },
+  restore() {
+    const S = window.CdvPurchase;
+    if (!S || !this.ready) { this.msg('Loja indisponível. Verifique a internet.'); return; }
+    this.msg('Procurando compras anteriores…');
+    S.store.restorePurchases().then(() => { if (!this.owned) this.msg('Nenhuma compra encontrada nesta conta Google.'); });
+  },
+  msg(t) { const el = $('shopMsg'); if (el) el.textContent = t; },
+  paint() { const b = $('bShopBuy'); if (b) b.textContent = this.price ? 'Desbloquear por ' + this.price : 'Desbloquear'; }
+};
+const worldLocked = wi => wi >= 1 && !Shop.owned;
 
 /* ---------------- Áudio sintetizado ---------------- */
 const Snd = {
@@ -582,8 +676,15 @@ const Snd = {
 document.addEventListener('visibilitychange', () => { if (!Snd.ctx) return; if (document.hidden) Snd.ctx.suspend(); else Snd.ctx.resume(); });
 
 /* ---------------- Voz: arquivos naturais, com voz do aparelho como reserva ---------------- */
+function nativeTTS() { return window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.TextToSpeech; }
+function speakText(t, cancel) {
+  const n = nativeTTS();
+  if (n) { (cancel ? n.stop() : Promise.resolve()).catch(() => {}).then(() => n.speak({ text: t, lang: 'pt-BR', rate: .95, pitch: 1.3, volume: 1 })).catch(() => {}); return; }
+  if (!('speechSynthesis' in window)) return;
+  try { if (cancel) speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'pt-BR'; if (Voice.v) u.voice = Voice.v; u.rate = .95; u.pitch = 1.3; speechSynthesis.speak(u); } catch (e) {}
+}
 const Voice = {
-  bufs: {}, loading: false, srcs: [], endAt: 0, lastChick: 0, tts: 'speechSynthesis' in window, v: null,
+  bufs: {}, loading: false, srcs: [], endAt: 0, lastChick: 0, tts: 'speechSynthesis' in window || !!nativeTTS(), v: null,
   load() {
     if (this.loading || !Snd.ctx) return; this.loading = true;
     const keys = Object.keys(LINES); let i = 0;
@@ -634,9 +735,7 @@ const Voice = {
     if (!nm || !Save.d.sound || !this.tts) return;
     const c = Snd.ctx, wait = c ? Math.max(0, this.endAt - c.currentTime) : 0;
     clearTimeout(this.nameT);
-    this.nameT = setTimeout(() => {
-      try { const u = new SpeechSynthesisUtterance((prefix || '') + nm + (suffix || '!')); u.lang = 'pt-BR'; if (this.v) u.voice = this.v; u.rate = .95; u.pitch = 1.3; speechSynthesis.speak(u); } catch (e) {}
-    }, wait * 1000 + 120);
+    this.nameT = setTimeout(() => speakText((prefix || '') + nm + (suffix || '!'), false), wait * 1000 + 120);
   },
   stop() {
     clearTimeout(this.nameT);
@@ -764,7 +863,7 @@ function updateScore(bump) {
 }
 
 /* ---------------- Telas ---------------- */
-function show(id) { for (const s of ['title', 'levels', 'result', 'album', 'nameOv']) $(s).hidden = s !== id; }
+function show(id) { for (const s of ['title', 'levels', 'result', 'album', 'nameOv', 'shopOv', 'gateOv']) $(s).hidden = s !== id; }
 function kidName() { return (Save.d.kid || '').trim(); }
 function updateTag() { $('titleTag').textContent = kidName() ? `Oi, ${kidName()}! Mire, lance e veja as galinhas voarem!` : 'Mire, lance e veja as galinhas voarem!'; }
 let nameNext = null;
@@ -773,6 +872,19 @@ function goName(next) {
   $('kidName').value = Save.d.kid || ''; $('kidSay').value = Save.d.kidSay || '';
   setTimeout(() => { try { $('kidName').focus(); } catch (e) {} }, 100);
 }
+let gateAnswer = 0;
+function openShop() {
+  screen = 'shop'; show('shopOv'); $('hud').hidden = true; Shop.msg(''); Shop.paint();
+  Voice.say('adult');
+}
+function openGate(next) {
+  screen = 'gate'; show('gateOv');
+  const a = 6 + Math.floor(Math.random() * 4), b = 6 + Math.floor(Math.random() * 4);
+  gateAnswer = a * b; gateNext = next;
+  $('gateQ').textContent = `Quanto é ${a} × ${b}?`; $('gateAns').value = ''; $('gateErr').hidden = true;
+  setTimeout(() => { try { $('gateAns').focus(); } catch (e) {} }, 100);
+}
+let gateNext = null;
 /* ---------------- Figurinhas ---------------- */
 const STICKERS = [
   ['Zé Vesgo', 'derp'], ['Dona Óculos', 'cool'], ['Lili Dançarina', 'dancer'], ['Mamãe Cocó', 'mama'], ['Soneca', 'sleepy'], ['Pepita de Ouro', 'gold'],
@@ -813,13 +925,15 @@ function goLevels() {
   const box = $('lvWorlds'); box.innerHTML = '';
   WORLDS.forEach((w, wi) => {
     const h = document.createElement('h3'); h.textContent = w.icon + ' ' + w.name; box.appendChild(h);
+    if (worldLocked(wi)) { const bd = document.createElement('span'); bd.className = 'lockb'; bd.textContent = '🔒 Jogo completo'; h.appendChild(bd); }
     const gr = document.createElement('div'); gr.className = 'grid'; box.appendChild(gr);
     for (let i = wi * 6; i < wi * 6 + 6 && i < LEVELS.length; i++) {
       const st = Save.d.stars[i] || 0, open = i === 0 || (Save.d.stars[i - 1] || 0) > 0;
       const b = document.createElement('button'); b.className = 'lv w' + wi; b.disabled = !open;
       b.setAttribute('aria-label', 'Fase ' + (i + 1));
       b.innerHTML = open ? `<span>${i + 1}</span><span class="st">${'★'.repeat(st)}${'☆'.repeat(3 - st)}</span>` : '<span>🔒</span>';
-      b.onclick = () => { Snd.init(); Snd.click(); startLevel(i); };
+      if (worldLocked(wi)) { b.disabled = false; b.innerHTML = `<span>${i + 1}</span><span class="st">🔒</span>`; b.onclick = () => { Snd.init(); Snd.click(); openShop(); }; }
+      else b.onclick = () => { Snd.init(); Snd.click(); startLevel(i); };
       gr.appendChild(b);
     }
   });
@@ -1821,8 +1935,8 @@ function playGreeting() { setTimeout(() => { Voice.say('title'); Voice.name('Oi,
 $('bPlay').onclick = () => { Snd.init(); Snd.click(); if (!kidName()) { goName('levels'); return; } playGreeting(); goLevels(); };
 $('bName').onclick = () => { Snd.init(); Snd.click(); goName('title'); };
 $('bHear').onclick = () => {
-  Snd.init(); const n = ($('kidSay').value || $('kidName').value).trim(); if (!n || !Voice.tts) return;
-  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('Oi, ' + n + '!'); u.lang = 'pt-BR'; if (Voice.v) u.voice = Voice.v; u.rate = .95; u.pitch = 1.3; speechSynthesis.speak(u); } catch (e) {}
+  Snd.init(); const n = ($('kidSay').value || $('kidName').value).trim(); if (!n) return;
+  speakText('Oi, ' + n + '!', true);
 };
 $('nameForm').addEventListener('submit', e => {
   e.preventDefault(); Snd.init(); Snd.click();
@@ -1834,12 +1948,23 @@ $('bAlbum').onclick = () => { Snd.init(); Snd.click(); goAlbum(); };
 $('bAlbum2').onclick = () => { Snd.click(); goAlbum(); };
 $('bAlbBack').onclick = () => { Snd.click(); goLevels(); };
 $('bTip').onclick = () => { Snd.init(); showTip(); };
+$('bShopBuy').onclick = () => { Snd.click(); openGate('buy'); };
+$('bShopRestore').onclick = () => { Snd.click(); openGate('restore'); };
+$('bShopBack').onclick = () => { Snd.click(); goLevels(); };
+$('bGateBack').onclick = () => { Snd.click(); openShop(); };
+$('gateForm').addEventListener('submit', e => {
+  e.preventDefault();
+  if (parseInt($('gateAns').value, 10) !== gateAnswer) { $('gateErr').hidden = false; $('gateAns').value = ''; return; }
+  screen = 'shop'; show('shopOv');
+  if (gateNext === 'restore') Shop.restore(); else Shop.buy();
+});
+Shop.init();
 $('bHome').onclick = () => { Snd.click(); Voice.stop(); goLevels(); };
 $('bRetry').onclick = () => { Snd.click(); if (screen === 'play') loadLevel(li, true); };
 $('bMusic').onclick = () => { Snd.init(); Snd.setMusic(!Save.d.music); syncToggles(); };
 $('bSound').onclick = () => { Snd.init(); Snd.setSound(!Save.d.sound); syncToggles(); Snd.click(); };
 $('bResRetry').onclick = () => { Snd.click(); show(null); loadLevel(li, true); };
-$('bResNext').onclick = () => { Snd.click(); if (li < LEVELS.length - 1) { show(null); loadLevel(li + 1); } else goLevels(); };
+$('bResNext').onclick = () => { Snd.click(); if (li < LEVELS.length - 1) { if (worldLocked(worldOf(li + 1))) { openShop(); return; } show(null); loadLevel(li + 1); } else goLevels(); };
 syncToggles();
 updateTag();
 
