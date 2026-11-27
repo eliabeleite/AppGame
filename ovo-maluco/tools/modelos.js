@@ -9,7 +9,7 @@ const V = (x, y, z) => new THREE.Vector3(x, y, z);
 // ---------- materiais ----------
 const cache = {};
 export function mat(color, o = {}) {
-  const k = color + JSON.stringify(o);
+  const k = color + JSON.stringify({ ...o, map: o.map ? o.map.uuid : 0 });
   if (cache[k]) return cache[k];
   const m = new THREE.MeshPhysicalMaterial({ color, roughness: o.r ?? .42, metalness: o.metal ?? 0, clearcoat: o.cc ?? .35, clearcoatRoughness: .35, map: o.map || null, emissive: o.emissive || 0x000000, emissiveIntensity: o.ei ?? 1, side: o.side || THREE.FrontSide });
   return (cache[k] = m);
@@ -403,5 +403,19 @@ export const LISTA = [
   { id: 'vacafoguete', nome: 'Vaca Foguete' },
   { id: 'capicake', nome: 'Capivara Cupcake' },
 ];
+
+// contorno de desenho animado: casca invertida empurrada pela normal (usado no jogo e no render)
+export function addOutline(g, k = .016) {
+  g.updateMatrixWorld(true);
+  const meshes = []; g.traverse(o => { if (o.isMesh && !o.userData.outline) meshes.push(o); });
+  for (const m of meshes) {
+    if (!m.geometry.attributes.normal) continue;
+    const ws = new THREE.Vector3(); m.getWorldScale(ws); const sc = (Math.abs(ws.x) + Math.abs(ws.y) + Math.abs(ws.z)) / 3;
+    const om = new THREE.ShaderMaterial({ side: THREE.BackSide, uniforms: { th: { value: k / Math.max(.05, sc) } },
+      vertexShader: 'uniform float th; void main(){ vec3 p = position + normalize(normal) * th; gl_Position = projectionMatrix * modelViewMatrix * vec4(p,1.0); }',
+      fragmentShader: 'void main(){ gl_FragColor = vec4(0.23,0.14,0.08,1.0); }' });
+    const o = new THREE.Mesh(m.geometry, om); o.userData.outline = true; o.castShadow = false; m.add(o);
+  }
+}
 
 export function build(id) { const g = new THREE.Group(); (B[id] || (() => {}))(g); return g; }

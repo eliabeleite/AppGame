@@ -6,6 +6,7 @@
 <title>Ovo Maluco</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#5fcfc0">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"}}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap">
@@ -79,6 +80,24 @@ h2{margin:0;font-size:28px;text-align:center}
 .zc img{width:100%;aspect-ratio:1;object-fit:contain}
 .zc.off img{filter:brightness(0) opacity(.18)}
 .zc.off{background:#f1e8d6}
+.zc{position:relative;transform-style:preserve-3d;transition:transform .25s ease-out,box-shadow .25s;will-change:transform;overflow:hidden}
+.zc img{transition:transform .25s ease-out;transform:translateZ(0)}
+.zc.tilt{transition:transform .06s linear,box-shadow .2s;box-shadow:0 14px 24px rgba(0,0,0,.18)}
+.zc.tilt img{transform:translateZ(30px) scale(1.08)}
+.zc .glare{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .2s;background:radial-gradient(circle at var(--gx,50%) var(--gy,30%),rgba(255,255,255,.75),rgba(255,255,255,0) 55%);mix-blend-mode:soft-light}
+.zc.tilt .glare{opacity:1}
+.zoo{perspective:700px}
+#viewer{position:fixed;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:radial-gradient(circle at 50% 40%,rgba(255,247,232,.96),rgba(95,207,192,.97) 75%);opacity:0;transition:opacity .3s;
+  padding-top:calc(env(safe-area-inset-top,0px) + 10px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}
+#viewer.on{opacity:1}
+#vStage{position:relative;width:min(100vw,620px);height:min(66vh,620px);touch-action:none;cursor:grab}
+#vStage:active{cursor:grabbing}
+#vCanvas{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity .45s}
+#vCanvas.on{opacity:1}
+#vImg{position:fixed;z-index:41;pointer-events:none;transition:all .45s cubic-bezier(.2,1.2,.3,1),opacity .35s}
+#vName{font-size:clamp(26px,7vw,36px);font-weight:700;color:#fff;-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-align:center;margin:0}
+#vHelp{font-size:15px;font-weight:600;color:var(--ink);opacity:.75;margin:0;text-align:center}
+#vClose{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:max(14px,env(safe-area-inset-right,0px))}
 .zc.jump img{animation:jump .5s}
 .zc .cnt{font-size:11px;color:var(--orange-dk)}
 /* pais */
@@ -184,6 +203,14 @@ h2{margin:0;font-size:28px;text-align:center}
   </div>
 </section>
 
+<div id="viewer" hidden>
+  <button class="ib" id="vClose" aria-label="Fechar"><i data-ic="close"></i></button>
+  <div id="vStage"><canvas id="vCanvas"></canvas></div>
+  <p id="vName"></p>
+  <p id="vHelp">Arraste para girar · toque para pular</p>
+</div>
+<img id="vImg" alt="" hidden>
+
 <canvas id="fx"></canvas>
 
 <script>
@@ -248,6 +275,7 @@ const ICONS = {
   mute: `<svg viewBox="0 0 24 24" ${S}><path d="M11 5L6 9H3v6h3l5 4z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6"/></svg>`,
   gear: `<svg viewBox="0 0 24 24" ${S} stroke-width="2.2"><path d="M12.2 2h-.4a2 2 0 0 0-2 2v.2a2 2 0 0 1-1 1.7l-.4.3a2 2 0 0 1-2 0l-.2-.1a2 2 0 0 0-2.7.7l-.2.4a2 2 0 0 0 .7 2.7l.2.1a2 2 0 0 1 1 1.7v.5a2 2 0 0 1-1 1.7l-.2.1a2 2 0 0 0-.7 2.7l.2.4a2 2 0 0 0 2.7.7l.2-.1a2 2 0 0 1 2 0l.4.3a2 2 0 0 1 1 1.7v.2a2 2 0 0 0 2 2h.4a2 2 0 0 0 2-2v-.2a2 2 0 0 1 1-1.7l.4-.3a2 2 0 0 1 2 0l.2.1a2 2 0 0 0 2.7-.7l.2-.4a2 2 0 0 0-.7-2.7l-.2-.1a2 2 0 0 1-1-1.7v-.5a2 2 0 0 1 1-1.7l.2-.1a2 2 0 0 0 .7-2.7l-.2-.4a2 2 0 0 0-2.7-.7l-.2.1a2 2 0 0 1-2 0l-.4-.3a2 2 0 0 1-1-1.7V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3.2"/></svg>`,
   zoo: `<svg viewBox="0 0 24 24" ${S}><path d="M3 20h18"/><path d="M5 20v-9l7-5 7 5v9" fill="#ff9ecf"/><path d="M9 20v-5h6v5"/><circle cx="12" cy="11" r="1.4" fill="currentColor"/></svg>`,
+  close: `<svg viewBox="0 0 24 24" ${S} stroke-width="3.2"><path d="M6 6l12 12M18 6L6 18"/></svg>`,
   speaker: `<svg viewBox="0 0 24 24" ${S}><path d="M11 5L6 9H3v6h3l5 4z" fill="currentColor"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>`,
 };
 // desenhos das palavras (viewBox 64)
@@ -519,14 +547,65 @@ function goZoo() {
   for (const c of all) {
     const n = Save.d.zoo[c.id] || 0;
     const b = document.createElement('button'); b.className = 'zc' + (n ? '' : ' off'); b.setAttribute('aria-label', n ? c.nome : 'Criatura escondida');
-    b.innerHTML = `<img src="${c.img}" alt=""><span>${n ? c.nome : '?'}</span>${n > 1 ? `<span class="cnt">×${n}</span>` : ''}`;
+    b.innerHTML = `<img src="${c.img}" alt=""><span>${n ? c.nome : '?'}</span>${n > 1 ? `<span class="cnt">×${n}</span>` : ''}<i class="glare"></i>`;
+    tiltCard(b);
     b.onclick = () => {
-      Snd.init(); if (!n) { Snd.bad(); return; }
-      Snd.boing(); b.classList.remove('jump'); void b.offsetWidth; b.classList.add('jump');
-      if (c.custom) Voice.tts(c.nome); else Voice.say('nm_' + c.id);
+      Snd.init(); if (!n) { Snd.bad(); b.classList.remove('jump'); void b.offsetWidth; b.classList.add('jump'); return; }
+      Snd.boing(); openViewer(c, b.querySelector('img'));
     };
     g.appendChild(b);
   }
+}
+
+/* ---------------- Cards com perspectiva e visualizador 3D ---------------- */
+function tiltCard(el) {
+  const move = e => {
+    const r = el.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+    if (x < -.1 || x > 1.1 || y < -.1 || y > 1.1) return;
+    el.classList.add('tilt');
+    el.style.transform = `rotateX(${(.5 - y) * 26}deg) rotateY(${(x - .5) * 30}deg) scale(1.06)`;
+    el.style.setProperty('--gx', (x * 100) + '%'); el.style.setProperty('--gy', (y * 100) + '%');
+  };
+  const reset = () => { el.classList.remove('tilt'); el.style.transform = ''; };
+  el.addEventListener('pointermove', move); el.addEventListener('pointerdown', move);
+  el.addEventListener('pointerleave', reset); el.addEventListener('pointercancel', reset); el.addEventListener('pointerup', () => setTimeout(reset, 120));
+}
+let viewerOpen = false, v3d = null;
+function sayCreature(c) { if (c.custom) Voice.tts(c.nome); else Voice.say('nm_' + c.id); }
+function openViewer(c, fromImg) {
+  viewerOpen = true;
+  const vw = $('viewer'), vi = $('vImg'), stage = $('vStage');
+  $('vName').textContent = c.nome; $('vHelp').textContent = c.custom ? 'Arraste para inclinar · toque para pular' : 'Arraste para girar · toque para pular';
+  vw.hidden = false; requestAnimationFrame(() => vw.classList.add('on'));
+  // a imagem do card voa até o centro
+  const r = fromImg.getBoundingClientRect();
+  vi.src = c.img; vi.hidden = false; vi.style.opacity = '1';
+  Object.assign(vi.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px', transform: 'none' });
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const sr = stage.getBoundingClientRect(), size = Math.min(sr.width, sr.height) * .8;
+    Object.assign(vi.style, { left: (sr.left + (sr.width - size) / 2) + 'px', top: (sr.top + (sr.height - size) / 2) + 'px', width: size + 'px', height: size + 'px' });
+  }));
+  setTimeout(() => sayCreature(c), 350);
+  const fallback = () => { flat2D(stage, vi); };
+  if (c.custom || !window.OVO3D) { setTimeout(fallback, 460); return; }
+  window.OVO3D.open(c.id, $('vCanvas'), stage, {
+    ready: () => { if (!viewerOpen) return; $('vCanvas').classList.add('on'); vi.style.opacity = '0'; setTimeout(() => { vi.hidden = true; }, 350); },
+    tap: () => { Snd.boing(); sayCreature(c); },
+  }).catch(() => setTimeout(fallback, 460));
+}
+// sem 3D: a imagem ampliada inclina com o dedo
+function flat2D(stage, vi) {
+  if (!viewerOpen) return;
+  vi.style.transition = 'transform .08s linear';
+  stage.onpointermove = e => { const r = stage.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5; vi.style.transform = `perspective(800px) rotateY(${x * 40}deg) rotateX(${-y * 30}deg)`; };
+  stage.onpointerdown = () => { Snd.boing(); vi.animate([{ transform: vi.style.transform + ' translateY(0)' }, { transform: vi.style.transform + ' translateY(-40px) scale(1.05,.95)' }, { transform: vi.style.transform }], { duration: 450 }); };
+}
+function closeViewer() {
+  viewerOpen = false; const vw = $('viewer'), vi = $('vImg'), stage = $('vStage');
+  vw.classList.remove('on'); vi.style.opacity = '0'; $('vCanvas').classList.remove('on');
+  stage.onpointermove = stage.onpointerdown = null;
+  if (window.OVO3D) window.OVO3D.close();
+  setTimeout(() => { vw.hidden = true; vi.hidden = true; vi.style.transition = ''; }, 320);
 }
 
 /* ---------------- Área dos pais ---------------- */
@@ -575,6 +654,7 @@ function syncSound() { for (const id of ['bSound', 'bSound2']) $(id).innerHTML =
 $('bPlay').onclick = () => { Snd.init(); Snd.tap(); show('play'); Voice.say('welcome'); setTimeout(() => { if (screen === 'play') newRound(); }, 1800); $('prompt').innerHTML = '<div class="ask">Vamos lá!</div>'; $('opts').innerHTML = ''; round = { n: 0 }; paintPips(); };
 $('bZoo').onclick = () => { Snd.init(); Snd.tap(); goZoo(); };
 $('bZooBack').onclick = () => { Snd.tap(); goHome(); };
+$('vClose').onclick = () => { Snd.tap(); closeViewer(); };
 $('bHome').onclick = () => { Snd.tap(); Voice.stop(); goHome(); };
 $('bSeeZoo').onclick = () => { Snd.tap(); goZoo(); };
 $('bAgain').onclick = () => { Snd.tap(); show('play'); newRound(); };
@@ -603,6 +683,73 @@ $('bReset').onclick = () => {
 
 hydrate(); syncSound(); goHome();
 })();
+</script>
+<script type="module">
+// Visualizador 3D em tempo real (Three.js). Carregado só quando o card é aberto.
+let mods = null, st = null;
+async function load() {
+  if (mods) return mods;
+  const [THREE, env, M] = await Promise.all([import('three'), import('three/addons/environments/RoomEnvironment.js'), import('./tools/modelos.js')]);
+  return (mods = { THREE, RoomEnvironment: env.RoomEnvironment, M });
+}
+window.OVO3D = {
+  async open(id, canvas, stage, cb) {
+    const { THREE, RoomEnvironment, M } = await load();
+    this.close();
+    const W = stage.clientWidth, H = stage.clientHeight, dpr = Math.min(2, devicePixelRatio || 1);
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderer.setPixelRatio(dpr); renderer.setSize(W, H, false);
+    renderer.toneMapping = THREE.NeutralToneMapping; renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    const scene = new THREE.Scene(), pm = new THREE.PMREMGenerator(renderer);
+    scene.environment = pm.fromScene(new RoomEnvironment(), .04).texture;
+    scene.add(new THREE.HemisphereLight(0xfff6e0, 0x8a7a6a, .9));
+    const key = new THREE.DirectionalLight(0xffffff, 2.2); key.position.set(-3, 6, 5); key.castShadow = true;
+    key.shadow.mapSize.set(1024, 1024); key.shadow.radius = 5; key.shadow.bias = -.0005;
+    Object.assign(key.shadow.camera, { left: -4, right: 4, top: 4, bottom: -4, near: .1, far: 20 }); scene.add(key);
+    const rim = new THREE.DirectionalLight(0xbfe4ff, 1.2); rim.position.set(4, 3, -4); scene.add(rim);
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(20, 20), new THREE.ShadowMaterial({ opacity: .2 })); ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
+    const model = M.build(id); M.addOutline(model);
+    const box = new THREE.Box3().setFromObject(model), c = box.getCenter(new THREE.Vector3());
+    model.position.set(-c.x, -box.min.y, -c.z);
+    const spin = new THREE.Group(); spin.add(model); const hop = new THREE.Group(); hop.add(spin); scene.add(hop);
+    const sph = new THREE.Box3().setFromObject(hop).getBoundingSphere(new THREE.Sphere());
+    const cam = new THREE.PerspectiveCamera(30, W / H, .1, 100);
+    let yaw = id === 'tralalero' || id === 'bombardiro' || id === 'gusini' ? .55 : -.3, pitch = .25, zoom = 1, vy = 0, jump = 0;
+    const fit = () => { const d = sph.radius / Math.sin(THREE.MathUtils.degToRad(15)) * 1.05 * zoom * Math.max(1, (H / W) * .9); cam.position.set(sph.center.x, sph.center.y + Math.sin(pitch) * d, sph.center.z + Math.cos(pitch) * d); cam.lookAt(sph.center); };
+    // arrastar gira (com inércia), pinçar aproxima, toque faz pular
+    const pts = new Map(); let downAt = 0, moved = 0, pinch0 = 0, zoom0 = 1;
+    const onDown = e => { stage.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]); downAt = performance.now(); moved = 0; if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch0 = Math.hypot(a[0] - b[0], a[1] - b[1]); zoom0 = zoom; } };
+    const onMove = e => {
+      if (!pts.has(e.pointerId)) return; const [px, py] = pts.get(e.pointerId); const dx = e.clientX - px, dy = e.clientY - py; pts.set(e.pointerId, [e.clientX, e.clientY]); moved += Math.abs(dx) + Math.abs(dy);
+      if (pts.size === 2) { const [a, b] = [...pts.values()]; zoom = Math.min(1.6, Math.max(.55, zoom0 * pinch0 / Math.max(10, Math.hypot(a[0] - b[0], a[1] - b[1])))); return; }
+      vy = dx * .012; yaw += vy; pitch = Math.min(.9, Math.max(-.25, pitch + dy * .006));
+    };
+    const onUp = e => { pts.delete(e.pointerId); if (moved < 8 && performance.now() - downAt < 350) { jump = 1; cb.tap && cb.tap(); } };
+    const onWheel = e => { e.preventDefault(); zoom = Math.min(1.6, Math.max(.55, zoom * (1 + Math.sign(e.deltaY) * .08))); };
+    stage.addEventListener('pointerdown', onDown); stage.addEventListener('pointermove', onMove); stage.addEventListener('pointerup', onUp); stage.addEventListener('pointercancel', onUp); stage.addEventListener('wheel', onWheel, { passive: false });
+    let t = 0, last = performance.now(), raf = 0, first = true;
+    const loop = now => {
+      const dt = Math.min(.05, Math.max(0, now - last) / 1000); last = now; t += dt;
+      if (!pts.size) { vy *= Math.pow(.04, dt); yaw += vy + dt * .25 * (Math.abs(vy) < .002 ? 1 : 0); }
+      spin.rotation.y = yaw;
+      jump = Math.max(0, jump - dt * 1.8); const j = Math.sin((1 - jump) * Math.PI) * (jump > 0 ? 1 : 0);
+      hop.position.y = Math.sin(t * 2.2) * .04 + j * .5;
+      hop.scale.set(1 + (jump > .85 ? .08 : 0) - j * .03, 1 - (jump > .85 ? .08 : 0) + j * .05, 1 + (jump > .85 ? .08 : 0) - j * .03);
+      spin.rotation.z = Math.sin(t * 1.7) * .03;
+      fit(); renderer.render(scene, cam);
+      if (first) { first = false; cb.ready && cb.ready(); }
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    st = { renderer, scene, pm, raf, off: () => { stage.removeEventListener('pointerdown', onDown); stage.removeEventListener('pointermove', onMove); stage.removeEventListener('pointerup', onUp); stage.removeEventListener('pointercancel', onUp); stage.removeEventListener('wheel', onWheel); } };
+  },
+  close() {
+    if (!st) return; cancelAnimationFrame(st.raf); st.off();
+    st.scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { (Array.isArray(o.material) ? o.material : [o.material]).forEach(m => { if (m.map) m.map.dispose(); m.dispose(); }); } });
+    st.pm.dispose(); st.renderer.dispose(); st = null;
+  },
+};
 </script>
 </body>
 </html>
