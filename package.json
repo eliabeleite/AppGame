@@ -7,7 +7,8 @@
     "build": "node scripts/build-www.mjs",
     "sync": "npm run build && npx cap sync android",
     "android": "npm run sync && npx cap open android",
-    "test": "node tests/levels.cjs"
+    "test": "node tests/levels.cjs",
+    "test:jogo": "node tests/jogar-sozinho.cjs"
   },
   "dependencies": {
     "@capacitor-community/text-to-speech": "8.0.2",
