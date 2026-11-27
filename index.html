@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <title>Lança-Penas</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -92,6 +94,14 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
 .shopl{text-align:left;margin:6px auto 4px;padding-left:22px;max-width:300px;font-size:16px;font-weight:600;line-height:1.45}
 .shopm{font-size:15px;font-weight:600;margin:6px 0 0;min-height:1.2em}
 .lockb{font-size:12px;font-weight:700;background:var(--barn);color:#fff;border-radius:8px;padding:2px 8px;margin-left:auto}
+.gear{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:max(12px,env(safe-area-inset-right,0px));z-index:2}
+.opt{display:flex;flex-direction:column;gap:6px;text-align:left;margin:10px 0 4px}
+.optt{font-weight:700;font-size:16px}
+.opt small{font-size:13px;opacity:.75}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{flex:1 1 0;min-width:0;border:0;border-radius:12px;padding:10px 6px;font-size:16px;font-weight:700;background:#efe5d0;color:var(--ink);box-shadow:0 3px 0 var(--cream-dk)}
+.seg button.on{background:var(--grass);color:#fff;box-shadow:0 3px 0 #3f8a2c}
+.restz{font-size:60px;margin:4px 0;animation:pulse 2.4s infinite}
 .namef{display:flex;flex-direction:column;gap:6px;text-align:left}
 .namef label{font-weight:600;font-size:15px}
 .namef label small{font-weight:500;opacity:.7}
@@ -133,6 +143,7 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
 </div>
 
 <div id="title" class="ov">
+  <button class="ib gear" id="bParents" aria-label="Área dos pais">⚙️</button>
   <h1 class="logo">Lança<br>Penas<small>galinhas voadoras</small></h1>
   <button class="big" id="bPlay">▶ Jogar</button>
   <div class="row" style="margin-top:0"><button class="big alt sm" id="bAlbum">📒 Álbum</button><button class="big alt sm" id="bName">✏️ Nome</button></div>
@@ -202,6 +213,38 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
   </div>
 </div>
 
+<div id="parentsOv" class="ov dim" hidden>
+  <div class="card levels-card">
+    <h2>Área dos pais</h2>
+    <div class="opt">
+      <span class="optt">Dificuldade</span>
+      <div class="seg" id="segDiff"><button type="button" data-v="easy">Fácil</button><button type="button" data-v="normal">Normal</button><button type="button" data-v="hard">Desafio</button></div>
+      <small id="diffInfo"></small>
+    </div>
+    <div class="opt">
+      <span class="optt">Tempo de jogo por vez</span>
+      <div class="seg" id="segTime"><button type="button" data-v="0">Livre</button><button type="button" data-v="15">15 min</button><button type="button" data-v="30">30 min</button><button type="button" data-v="45">45 min</button></div>
+      <small>Quando o tempo acaba, as galinhas vão dormir por 20 minutos.</small>
+    </div>
+    <div class="row">
+      <button type="button" class="big alt sm" id="bPName">✏️ Nome e voz</button>
+      <button type="button" class="big alt sm" id="bPReset">Apagar progresso</button>
+    </div>
+    <p id="pMsg" class="shopm"></p>
+    <div class="row"><button type="button" class="big sm" id="bPBack">Pronto</button></div>
+  </div>
+</div>
+
+<div id="restOv" class="ov dim" hidden>
+  <div class="card">
+    <h2 id="restTitle">Hora de descansar!</h2>
+    <div class="restz">😴🐔💤</div>
+    <p class="shopm">As galinhas foram dormir. Volte mais tarde para brincar de novo!</p>
+    <p class="shopm" id="restLeft"></p>
+    <div class="row"><button type="button" class="big alt sm" id="bRestParents">Área dos pais</button></div>
+  </div>
+</div>
+
 <div id="album" class="ov dim" hidden>
   <div class="card levels-card">
     <h2>Álbum de figurinhas</h2>
@@ -248,7 +291,7 @@ const LINES = /*LINES-START*/{
 "combo2":"Combo!","combo3":"Super combo!","combo4":"Mega combo!","combo5":"Combo galáctico!",
 "sp_triple":"Lança tripla!","sp_giant":"Lança gigante!","sp_extra":"Ganhou uma lança extra!",
 "gold":"Olha a galinha dourada! Ela vale muitos pontos!","helmet":"Essa galinha tem capacete! Precisa acertar duas vezes!","helmet_off":"Plim! Caiu o capacete!",
-"hint":"Arraste o dedo para mirar e solte para lançar!","power":"Segure o dedo mais tempo para a lança ficar super rápida!","super":"Super lançamento!","world4":"Uau! Chegamos ao mundo do arco-íris! Agora é desafio!","say_stick":"A lança fica presa onde bater. Depois você atira de lá!","say_pad":"Só as almofadas azuis fazem a lança quicar!","say_glass":"Quebre o vidro com a lança!","say_portal":"Entre no portal azul e saia no laranja!","say_magnet":"Pegue a bolha do ímã. A lança vai atrás das galinhas!","say_confetti":"A bolha de confete faz a lança explodir em festa!","say_ride":"Acerte a caixa que anda e atire de cima dela!","sp_magnet":"Lança ímã!","sp_confetti":"Lança confete!","streak":"Sequência!","golden":"Ganhou a lança dourada!","trick":"Tabela!","perfect":"Perfeito!","boss":"Cuidado com a galinha rainha! Ela precisa de três lançadas!","intro_BOLA":"Vamos formar a palavra bola!","spell_BOLA":"Bê, ó, éle, á. Bola! Muito bem!","L_B":"Bê!","tip":"Olha a dica! Mire onde está a mãozinha!","help":"Ganhou lanças extras para tentar de novo!","sticker":"Oba! Você ganhou uma figurinha nova!","adult":"Para jogar os outros mundos, chame um adulto!","thanks":"Oba! Agora todos os mundos estão liberados!",
+"hint":"Arraste o dedo para mirar e solte para lançar!","power":"Segure o dedo mais tempo para a lança ficar super rápida!","super":"Super lançamento!","world4":"Uau! Chegamos ao mundo do arco-íris! Agora é desafio!","say_stick":"A lança fica presa onde bater. Depois você atira de lá!","say_pad":"Só as almofadas azuis fazem a lança quicar!","say_glass":"Quebre o vidro com a lança!","say_portal":"Entre no portal azul e saia no laranja!","say_magnet":"Pegue a bolha do ímã. A lança vai atrás das galinhas!","say_confetti":"A bolha de confete faz a lança explodir em festa!","say_ride":"Acerte a caixa que anda e atire de cima dela!","sp_magnet":"Lança ímã!","sp_confetti":"Lança confete!","streak":"Sequência!","golden":"Ganhou a lança dourada!","trick":"Tabela!","perfect":"Perfeito!","boss":"Cuidado com a galinha rainha! Ela precisa de três lançadas!","intro_BOLA":"Vamos formar a palavra bola!","spell_BOLA":"Bê, ó, éle, á. Bola! Muito bem!","L_B":"Bê!","tip":"Olha a dica! Mire onde está a mãozinha!","help":"Ganhou lanças extras para tentar de novo!","sticker":"Oba! Você ganhou uma figurinha nova!","adult":"Para jogar os outros mundos, chame um adulto!","thanks":"Oba! Agora todos os mundos estão liberados!","rest":"Hora de descansar! As galinhas foram dormir. Até mais tarde!",
 "say_wall":"A caixa está no caminho. Jogue na parede!","say_one":"Uma lança só pode pegar todas!","say_bounce":"O pula-pula azul faz a lança quicar!",
 "say_final":"Última fase! Você consegue!","say_combo":"Acerte as duas com uma lança só!","say_triple":"Acerte a bolha para ganhar uma lança tripla!","say_giant":"Acerte a bolha para a lança ficar gigante!",
 "world1":"Bem-vindo à fazenda!","world2":"Olha que lindo o pôr do sol!","world3":"Ficou de noite! Cuidado com as galinhas dorminhocas!",
@@ -494,7 +537,7 @@ const PRODUCT_ID = 'jogo_completo';
 
 /* ---------------- Salvamento ---------------- */
 const Save = {
-  k: 'lancapenas.v3', d: { stars: {}, best: {}, music: true, sound: true, kid: '', kidSay: '', ttsVoice: '' },
+  k: 'lancapenas.v3', d: { stars: {}, best: {}, music: true, sound: true, kid: '', kidSay: '', ttsVoice: '', diff: 'normal', limit: 0, restUntil: 0 },
   load() { try { const r = localStorage.getItem(this.k); if (r) Object.assign(this.d, JSON.parse(r)); } catch (e) {} },
   save() { try { localStorage.setItem(this.k, JSON.stringify(this.d)); } catch (e) {} }
 };
@@ -824,6 +867,11 @@ function setupAmbient() {
   for (let i = 0; i < n; i++) amb.push({ x: rnd(30, 370), y: rnd(80, 560), ph: rnd(0, 6), sp: rnd(.4, 1), dir: Math.random() < .5 ? -1 : 1, col: pick(['#ff9ec7', '#ffd23f', '#a7e3ff', '#c7a2ff']) });
 }
 
+const DIFFS = {
+  easy: { sp: 2, rad: 1.3, mv: .6, info: '+2 lanças, galinhas maiores para acertar e mais lentas.' },
+  normal: { sp: 0, rad: 1, mv: 1, info: 'Como o jogo foi pensado.' },
+  hard: { sp: -1, rad: .9, mv: 1.2, info: '1 lança a menos e galinhas mais rápidas.' },
+};
 function loadLevel(i, quiet) {
   li = i; L = LEVELS[i];
   world = worldOf(i); Snd.world = world;
@@ -837,7 +885,10 @@ function loadLevel(i, quiet) {
     else c.target = true;
     if (world >= 2 && c.kind !== 'gold' && c.kind !== 'queen' && c.kind !== 'helmet' && Math.random() < .45) c.sleep = true;
   }
-  spearsLeft = L.spears + Math.min(4, 2 * (failCount[i] || 0)); used = 0; hitCount = 0; score = 0; comboN = 0; bestCombo = 0;
+  const D = DIFFS[Save.d.diff] || DIFFS.normal;
+  for (const c of chickens) { c.sz = (c.sz || 1) * D.rad; if (c.move) c.move = { ...c.move, sp: c.move.sp * D.mv }; }
+  for (const b of LV.blocks) if (b.move) b.move = { ...b.move, sp: b.move.sp * D.mv };
+  spearsLeft = Math.max(L.par, L.spears + D.sp) + Math.min(4, 2 * (failCount[i] || 0)); used = 0; hitCount = 0; score = 0; comboN = 0; bestCombo = 0;
   spears = []; stuckSpears = []; parts = []; texts = []; banners = []; eggs = []; chicks = []; rings = [];
   slots = L.type === 'word' ? L.goal.split('').map(ch => ({ ch, ok: false })) : [];
   phase = 'aim'; aiming = false; waitT = 0; slowT = 0; zoomK = 0;
@@ -891,7 +942,7 @@ function updateScore(bump) {
 }
 
 /* ---------------- Telas ---------------- */
-function show(id) { for (const s of ['title', 'levels', 'result', 'album', 'nameOv', 'shopOv', 'gateOv']) $(s).hidden = s !== id; }
+function show(id) { for (const s of ['title', 'levels', 'result', 'album', 'nameOv', 'shopOv', 'gateOv', 'parentsOv', 'restOv']) $(s).hidden = s !== id; }
 function kidName() { return (Save.d.kid || '').trim(); }
 function updateTag() { $('titleTag').textContent = kidName() ? `Oi, ${kidName()}! Mire, lance e veja as galinhas voarem!` : 'Mire, lance e veja as galinhas voarem!'; }
 let nameNext = null;
@@ -919,6 +970,18 @@ function openGate(next) {
   setTimeout(() => { try { $('gateAns').focus(); } catch (e) {} }, 100);
 }
 let gateNext = null;
+function paintParents() {
+  for (const b of $('segDiff').children) b.classList.toggle('on', b.dataset.v === (Save.d.diff || 'normal'));
+  for (const b of $('segTime').children) b.classList.toggle('on', +b.dataset.v === (Save.d.limit || 0));
+  $('diffInfo').textContent = (DIFFS[Save.d.diff] || DIFFS.normal).info;
+}
+let resetArm = 0;
+function openParents() {
+  screen = 'parents'; show('parentsOv'); $('hud').hidden = true; $('pMsg').textContent = ''; resetArm = 0;
+  $('bPReset').textContent = 'Apagar progresso';
+  if (restActive()) { Save.d.restUntil = 0; playMs = 0; Save.save(); $('pMsg').textContent = 'Descanso encerrado. O tempo de jogo recomeçou.'; }
+  paintParents();
+}
 /* ---------------- Figurinhas ---------------- */
 const STICKERS = [
   ['Zé Vesgo', 'derp'], ['Dona Óculos', 'cool'], ['Lili Dançarina', 'dancer'], ['Mamãe Cocó', 'mama'], ['Soneca', 'sleepy'], ['Pepita de Ouro', 'gold'],
@@ -955,6 +1018,7 @@ function goAlbum() {
 }
 function goTitle() { screen = 'title'; show('title'); $('hud').hidden = true; demo(); resize(); }
 function goLevels() {
+  if (restActive()) { goRest(); return; }
   screen = 'levels'; show('levels'); $('hud').hidden = true; Snd.whistleOff();
   const box = $('lvWorlds'); box.innerHTML = '';
   WORLDS.forEach((w, wi) => {
@@ -973,7 +1037,7 @@ function goLevels() {
   });
   demo(); resize();
 }
-function startLevel(i) { screen = 'play'; show(null); $('hud').hidden = false; loadLevel(i); resize(); }
+function startLevel(i) { if (timeUpCheck()) return; screen = 'play'; show(null); $('hud').hidden = false; loadLevel(i); resize(); }
 function demo() {
   L = LEVELS[10]; world = 0; Snd.world = 0;
   chickens = buildChickens(L.chickens, 3); LV = { blocks: [], bubbles: [], pads: (L.pads || []).map(p => ({ ...p, hitT: 0 })), portals: [], maxB: L.maxB || 6 };
@@ -1235,7 +1299,24 @@ function springPupils(c, dt, tx, ty) {
     const m = Math.hypot(p.x, p.y); if (m > 1) { p.x /= m; p.y /= m; p.vx *= -.4; p.vy *= -.4; }
   }
 }
+let playMs = 0;
+function restActive() { return Save.d.restUntil && Date.now() < Save.d.restUntil; }
+function goRest() {
+  screen = 'rest'; show('restOv'); $('hud').hidden = true; Snd.whistleOff();
+  $('restTitle').textContent = 'Hora de descansar' + (kidName() ? ', ' + kidName() : '') + '!';
+  const m = Math.max(1, Math.ceil((Save.d.restUntil - Date.now()) / 60000));
+  $('restLeft').textContent = 'Faltam ' + m + (m > 1 ? ' minutos.' : ' minuto.');
+  Voice.say('rest');
+}
+function timeUpCheck() {
+  if (restActive()) { goRest(); return true; }
+  if (Save.d.limit > 0 && playMs >= Save.d.limit * 60000) {
+    playMs = 0; Save.d.restUntil = Date.now() + 20 * 60000; Save.save(); goRest(); return true;
+  }
+  return false;
+}
 function update(rdt) {
+  if (screen === 'play' && !document.hidden) playMs += rdt * 1000;
   if (slowT > 0) slowT -= rdt;
   const dt = rdt * (slowT > 0 ? .3 : 1);
   zoomK += ((slowT > 0 ? 1 : 0) - zoomK) * Math.min(1, rdt * 6);
@@ -1988,7 +2069,8 @@ $('bHear').onclick = () => {
 $('nameForm').addEventListener('submit', e => {
   e.preventDefault(); Snd.init(); Snd.click();
   Save.d.kid = $('kidName').value.trim().slice(0, 20); Save.d.kidSay = $('kidSay').value.trim().slice(0, 30); Save.d.ttsVoice = $('kidVoice').value; Save.save(); updateTag();
-  if (nameNext === 'levels') { playGreeting(); goLevels(); } else { if (kidName()) Voice.name('Oi, ', '!'); goTitle(); }
+  if (nameNext === 'levels') { playGreeting(); goLevels(); }
+  else if (nameNext === 'parents') openParents(); else { if (kidName()) Voice.name('Oi, ', '!'); goTitle(); }
 });
 $('bBackTitle').onclick = () => { Snd.click(); goTitle(); };
 $('bAlbum').onclick = () => { Snd.init(); Snd.click(); goAlbum(); };
@@ -1998,20 +2080,37 @@ $('bTip').onclick = () => { Snd.init(); showTip(); };
 $('bShopBuy').onclick = () => { Snd.click(); openGate('buy'); };
 $('bShopRestore').onclick = () => { Snd.click(); openGate('restore'); };
 $('bShopBack').onclick = () => { Snd.click(); goLevels(); };
-$('bGateBack').onclick = () => { Snd.click(); openShop(); };
+$('bGateBack').onclick = () => { Snd.click(); if (gateNext === 'parents') { if (restActive()) goRest(); else goTitle(); } else openShop(); };
+$('bParents').onclick = () => { Snd.init(); Snd.click(); openGate('parents'); };
+$('bRestParents').onclick = () => { Snd.click(); openGate('parents'); };
+$('segDiff').onclick = e => { const v = e.target.dataset && e.target.dataset.v; if (!v) return; Snd.click(); Save.d.diff = v; Save.save(); paintParents(); };
+$('segTime').onclick = e => { const v = e.target.dataset && e.target.dataset.v; if (v === undefined) return; Snd.click(); Save.d.limit = +v; playMs = 0; Save.save(); paintParents(); };
+$('bPName').onclick = () => { Snd.click(); goName('parents'); };
+$('bPBack').onclick = () => { Snd.click(); goTitle(); };
+$('bPReset').onclick = () => {
+  Snd.click();
+  if (!resetArm) { resetArm = 1; $('bPReset').textContent = 'Toque de novo para apagar'; $('pMsg').textContent = 'Isso apaga fases, estrelas, recordes e figurinhas.'; return; }
+  const keep = { music: Save.d.music, sound: Save.d.sound, kid: Save.d.kid, kidSay: Save.d.kidSay, ttsVoice: Save.d.ttsVoice, diff: Save.d.diff, limit: Save.d.limit, owned: Save.d.owned };
+  Save.d = { stars: {}, best: {}, restUntil: 0, ...keep }; Save.save(); resetArm = 0;
+  $('bPReset').textContent = 'Apagar progresso'; $('pMsg').textContent = 'Progresso apagado.';
+};
 $('gateForm').addEventListener('submit', e => {
   e.preventDefault();
   if (parseInt($('gateAns').value, 10) !== gateAnswer) { $('gateErr').hidden = false; $('gateAns').value = ''; return; }
+  if (gateNext === 'parents') { openParents(); return; }
   screen = 'shop'; show('shopOv');
   if (gateNext === 'restore') Shop.restore(); else Shop.buy();
 });
 Shop.init();
+if ('serviceWorker' in navigator && location.protocol === 'https:' && !window.Capacitor && !/claude/i.test(location.hostname)) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
 $('bHome').onclick = () => { Snd.click(); Voice.stop(); goLevels(); };
 $('bRetry').onclick = () => { Snd.click(); if (screen === 'play') loadLevel(li, true); };
 $('bMusic').onclick = () => { Snd.init(); Snd.setMusic(!Save.d.music); syncToggles(); };
 $('bSound').onclick = () => { Snd.init(); Snd.setSound(!Save.d.sound); syncToggles(); Snd.click(); };
-$('bResRetry').onclick = () => { Snd.click(); show(null); loadLevel(li, true); };
-$('bResNext').onclick = () => { Snd.click(); if (li < LEVELS.length - 1) { if (worldLocked(worldOf(li + 1))) { openShop(); return; } show(null); loadLevel(li + 1); } else goLevels(); };
+$('bResRetry').onclick = () => { Snd.click(); if (timeUpCheck()) return; show(null); loadLevel(li, true); };
+$('bResNext').onclick = () => { Snd.click(); if (li < LEVELS.length - 1) { if (worldLocked(worldOf(li + 1))) { openShop(); return; } if (timeUpCheck()) return; show(null); loadLevel(li + 1); } else goLevels(); };
 syncToggles();
 updateTag();
 

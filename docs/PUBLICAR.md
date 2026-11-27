@@ -67,3 +67,20 @@ O primeiro mundo é grátis. Os outros 3 mundos são liberados com um pagamento 
 
 - Acompanhe a taxa de conversão (quantos instalam vs. quantos compram) no Play Console. Abaixo de 2% indica que o preço ou o mundo grátis precisam de ajuste.
 - Atualizações pequenas e raras: o objetivo é baixa manutenção.
+
+## 7. Versão web instalável (sem Play Store)
+
+A versão web já vem pronta para ser instalada como app (PWA): `manifest.webmanifest`, `sw.js` e a pasta `icons/`. Depois de aberta uma vez, ela funciona sem internet.
+
+1. Hospede a pasta do projeto em HTTPS, por exemplo no **GitHub Pages**: no GitHub, Settings > Pages > Source: "Deploy from a branch" > escolha a branch e a pasta raiz. Repositório privado só tem Pages em plano pago; nesse caso use outro serviço estático (Cloudflare Pages, Netlify).
+2. No celular, abra o endereço no Chrome (Android) ou Safari (iPhone) e use **"Adicionar à tela inicial"**.
+
+Essa versão é completa e grátis (para a família). Se publicar o endereço abertamente, ela concorre com o app pago.
+
+## 8. Área dos pais
+
+Na tela inicial, o botão ⚙️ abre a Área dos pais (protegida pela pergunta de multiplicação):
+
+- **Dificuldade:** Fácil (+2 lanças, galinhas maiores para acertar e mais lentas), Normal ou Desafio.
+- **Tempo de jogo:** Livre, 15, 30 ou 45 minutos. Ao acabar, o jogo termina a fase atual e mostra "Hora de descansar" por 20 minutos. Abrir a Área dos pais encerra o descanso.
+- **Nome e voz** e **Apagar progresso** (mantém compra, nome e preferências).
