@@ -83,6 +83,18 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
 .lv.w2{background:#8fa2ff;box-shadow:0 5px 0 #5163c9;color:#fff}
 .lv.w2 .st{color:#ffe36b}
 .lv.w3{background:#ff9ecf;box-shadow:0 5px 0 #d4609c}
+.alb{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stk{background:#fff;border-radius:14px;box-shadow:0 3px 0 var(--cream-dk);padding:4px 2px 6px;font-size:11px;font-weight:600;line-height:1.1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px}
+.stk canvas{width:100%;max-width:90px;height:auto;aspect-ratio:1}
+.stk.off{background:#ece4d3;color:#a99c83}
+#albCount{margin:0 0 10px;font-weight:600}
+.namef{display:flex;flex-direction:column;gap:6px;text-align:left}
+.namef label{font-weight:600;font-size:15px}
+.namef label small{font-weight:500;opacity:.7}
+.namef input{font-family:var(--display);font-size:24px;padding:10px 14px;border-radius:14px;border:3px solid var(--cream-dk);background:#fff;color:var(--ink);min-width:0}
+.namef input:focus{outline:none;border-color:var(--blue)}
+#resSticker{display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:700;color:var(--barn)}
+#resSticker canvas{width:96px;height:96px;animation:pop .6s}
 .lv[disabled]{background:#e4dccb;box-shadow:0 5px 0 #c4b89f;color:#a99c83;cursor:default;font-size:16px}
 .row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:16px}
 .stars{display:flex;justify-content:center;gap:6px;margin:4px 0 2px}
@@ -107,6 +119,7 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
   <div class="bar">
     <button class="ib" id="bHome" aria-label="Escolher fase"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></button>
     <div class="grow"><div id="lvlName">Fase 1</div><div id="scoreBox">⭐ 0</div></div>
+    <button class="ib" id="bTip" aria-label="Dica">💡</button>
     <button class="ib" id="bMusic" aria-label="Música">🎵</button>
     <button class="ib" id="bSound" aria-label="Sons e voz">🔊</button>
     <button class="ib" id="bRetry" aria-label="Recomeçar fase"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/></svg></button>
@@ -117,14 +130,40 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
 <div id="title" class="ov">
   <h1 class="logo">Lança<br>Penas<small>galinhas voadoras</small></h1>
   <button class="big" id="bPlay">▶ Jogar</button>
-  <p class="tag">Mire, lance e veja as galinhas voarem!</p>
+  <div class="row" style="margin-top:0"><button class="big alt sm" id="bAlbum">📒 Álbum</button><button class="big alt sm" id="bName">✏️ Nome</button></div>
+  <p class="tag" id="titleTag">Mire, lance e veja as galinhas voarem!</p>
 </div>
 
 <div id="levels" class="ov dim" hidden>
   <div class="card levels-card">
     <h2>Escolha a fase</h2>
     <div id="lvWorlds"></div>
-    <div class="row"><button class="big alt sm" id="bBackTitle">◀ Voltar</button></div>
+    <div class="row"><button class="big alt sm" id="bBackTitle">◀ Voltar</button><button class="big alt sm" id="bAlbum2">📒 Álbum</button></div>
+  </div>
+</div>
+
+<div id="nameOv" class="ov dim" hidden>
+  <div class="card">
+    <h2>Qual é o seu nome?</h2>
+    <form id="nameForm" class="namef">
+      <label for="kidName">Nome de quem vai jogar</label>
+      <input id="kidName" maxlength="20" autocomplete="off" placeholder="Ex.: Ana">
+      <label for="kidSay">Como a voz deve falar <small>(opcional, se ela errar)</small></label>
+      <input id="kidSay" maxlength="30" autocomplete="off" placeholder="Ex.: Aná">
+      <div class="row">
+        <button type="button" class="big alt sm" id="bHear">🔊 Ouvir</button>
+        <button type="submit" class="big sm">Pronto ▶</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="album" class="ov dim" hidden>
+  <div class="card levels-card">
+    <h2>Álbum de figurinhas</h2>
+    <p id="albCount"></p>
+    <div class="alb" id="albGrid"></div>
+    <div class="row"><button class="big alt sm" id="bAlbBack">◀ Voltar</button></div>
   </div>
 </div>
 
@@ -132,6 +171,7 @@ h3{margin:12px 0 6px;font-size:17px;font-weight:700;text-align:left;display:flex
   <div class="card">
     <h2 id="resTitle">Muito bem!</h2>
     <div id="resEmoji"></div>
+    <div id="resSticker" hidden></div>
     <div class="stars" id="resStars"><span>⭐</span><span>⭐</span><span>⭐</span></div>
     <p id="resMsg"></p>
     <p id="resScore"></p>
@@ -164,7 +204,7 @@ const LINES = /*LINES-START*/{
 "combo2":"Combo!","combo3":"Super combo!","combo4":"Mega combo!","combo5":"Combo galáctico!",
 "sp_triple":"Lança tripla!","sp_giant":"Lança gigante!","sp_extra":"Ganhou uma lança extra!",
 "gold":"Olha a galinha dourada! Ela vale muitos pontos!","helmet":"Essa galinha tem capacete! Precisa acertar duas vezes!","helmet_off":"Plim! Caiu o capacete!",
-"hint":"Arraste o dedo para mirar e solte para lançar!","power":"Segure o dedo mais tempo para a lança ficar super rápida!","super":"Super lançamento!","world4":"Uau! Chegamos ao mundo do arco-íris! Agora é desafio!","say_stick":"A lança fica presa onde bater. Depois você atira de lá!","say_pad":"Só as almofadas azuis fazem a lança quicar!","say_glass":"Quebre o vidro com a lança!","say_portal":"Entre no portal azul e saia no laranja!","say_magnet":"Pegue a bolha do ímã. A lança vai atrás das galinhas!","say_confetti":"A bolha de confete faz a lança explodir em festa!","say_ride":"Acerte a caixa que anda e atire de cima dela!","sp_magnet":"Lança ímã!","sp_confetti":"Lança confete!","streak":"Sequência!","golden":"Ganhou a lança dourada!","trick":"Tabela!","perfect":"Perfeito!","boss":"Cuidado com a galinha rainha! Ela precisa de três lançadas!","intro_BOLA":"Vamos formar a palavra bola!","spell_BOLA":"Bê, ó, éle, á. Bola! Muito bem!","L_B":"Bê!",
+"hint":"Arraste o dedo para mirar e solte para lançar!","power":"Segure o dedo mais tempo para a lança ficar super rápida!","super":"Super lançamento!","world4":"Uau! Chegamos ao mundo do arco-íris! Agora é desafio!","say_stick":"A lança fica presa onde bater. Depois você atira de lá!","say_pad":"Só as almofadas azuis fazem a lança quicar!","say_glass":"Quebre o vidro com a lança!","say_portal":"Entre no portal azul e saia no laranja!","say_magnet":"Pegue a bolha do ímã. A lança vai atrás das galinhas!","say_confetti":"A bolha de confete faz a lança explodir em festa!","say_ride":"Acerte a caixa que anda e atire de cima dela!","sp_magnet":"Lança ímã!","sp_confetti":"Lança confete!","streak":"Sequência!","golden":"Ganhou a lança dourada!","trick":"Tabela!","perfect":"Perfeito!","boss":"Cuidado com a galinha rainha! Ela precisa de três lançadas!","intro_BOLA":"Vamos formar a palavra bola!","spell_BOLA":"Bê, ó, éle, á. Bola! Muito bem!","L_B":"Bê!","tip":"Olha a dica! Mire onde está a mãozinha!","help":"Ganhou lanças extras para tentar de novo!","sticker":"Oba! Você ganhou uma figurinha nova!",
 "say_wall":"A caixa está no caminho. Jogue na parede!","say_one":"Uma lança só pode pegar todas!","say_bounce":"O pula-pula azul faz a lança quicar!",
 "say_final":"Última fase! Você consegue!","say_combo":"Acerte as duas com uma lança só!","say_triple":"Acerte a bolha para ganhar uma lança tripla!","say_giant":"Acerte a bolha para a lança ficar gigante!",
 "world1":"Bem-vindo à fazenda!","world2":"Olha que lindo o pôr do sol!","world3":"Ficou de noite! Cuidado com as galinhas dorminhocas!",
@@ -406,7 +446,7 @@ const worldOf = i => Math.min(3, Math.floor(i / 6));
 
 /* ---------------- Salvamento ---------------- */
 const Save = {
-  k: 'lancapenas.v3', d: { stars: {}, best: {}, music: true, sound: true },
+  k: 'lancapenas.v3', d: { stars: {}, best: {}, music: true, sound: true, kid: '', kidSay: '' },
   load() { try { const r = localStorage.getItem(this.k); if (r) Object.assign(this.d, JSON.parse(r)); } catch (e) {} },
   save() { try { localStorage.setItem(this.k, JSON.stringify(this.d)); } catch (e) {} }
 };
@@ -589,7 +629,17 @@ const Voice = {
       speechSynthesis.speak(u);
     } catch (e) {}
   },
+  name(prefix, suffix) {
+    const nm = (Save.d.kidSay || Save.d.kid || '').trim();
+    if (!nm || !Save.d.sound || !this.tts) return;
+    const c = Snd.ctx, wait = c ? Math.max(0, this.endAt - c.currentTime) : 0;
+    clearTimeout(this.nameT);
+    this.nameT = setTimeout(() => {
+      try { const u = new SpeechSynthesisUtterance((prefix || '') + nm + (suffix || '!')); u.lang = 'pt-BR'; if (this.v) u.voice = this.v; u.rate = .95; u.pitch = 1.3; speechSynthesis.speak(u); } catch (e) {}
+    }, wait * 1000 + 120);
+  },
   stop() {
+    clearTimeout(this.nameT);
     for (const s of this.srcs) { try { s.stop(); } catch (e) {} }
     this.srcs = []; this.endAt = 0;
     try { this.tts && speechSynthesis.cancel(); } catch (e) {}
@@ -598,12 +648,12 @@ const Voice = {
 if (Voice.tts) { Voice.pickTTS(); try { speechSynthesis.onvoiceschanged = () => Voice.pickTTS(); } catch (e) {} }
 
 /* ---------------- Canvas / visão ---------------- */
-const cv = $('cv'), ctx = cv.getContext('2d');
+const cv = $('cv'); let ctx = cv.getContext('2d');
 let DPR = 1, VS = 1, OX = 0, OY = 0, CW = 0, CH = 0;
 const sceneCv = document.createElement('canvas'), sctx = sceneCv.getContext('2d');
 let sceneKey = '';
 function resize() {
-  DPR = Math.min(window.devicePixelRatio || 1, 2.5);
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
   CW = innerWidth; CH = innerHeight;
   cv.width = Math.round(CW * DPR); cv.height = Math.round(CH * DPR);
   const hud = $('hud');
@@ -660,7 +710,7 @@ function loadLevel(i, quiet) {
     else c.target = true;
     if (world >= 2 && c.kind !== 'gold' && c.kind !== 'queen' && c.kind !== 'helmet' && Math.random() < .45) c.sleep = true;
   }
-  spearsLeft = L.spears; used = 0; hitCount = 0; score = 0; comboN = 0; bestCombo = 0;
+  spearsLeft = L.spears + Math.min(4, 2 * (failCount[i] || 0)); used = 0; hitCount = 0; score = 0; comboN = 0; bestCombo = 0;
   spears = []; stuckSpears = []; parts = []; texts = []; banners = []; eggs = []; chicks = []; rings = [];
   slots = L.type === 'word' ? L.goal.split('').map(ch => ({ ch, ok: false })) : [];
   phase = 'aim'; aiming = false; waitT = 0; slowT = 0; zoomK = 0;
@@ -677,6 +727,10 @@ function loadLevel(i, quiet) {
     Voice.say('intro_' + (L.type === 'all' ? 'all' : L.goal), { queue: true });
     for (const k of L.say || []) Voice.say(k, { queue: true });
     if (L.hint) Voice.say('hint', { queue: true });
+  }
+  if (failCount[i]) {
+    Voice.say('help', { queue: !quiet });
+    popText(200, 340, '+' + Math.min(4, 2 * failCount[i]) + ' LANÇAS DE AJUDA', '#b6ff8a', 26);
   }
 }
 
@@ -710,7 +764,49 @@ function updateScore(bump) {
 }
 
 /* ---------------- Telas ---------------- */
-function show(id) { for (const s of ['title', 'levels', 'result']) $(s).hidden = s !== id; }
+function show(id) { for (const s of ['title', 'levels', 'result', 'album', 'nameOv']) $(s).hidden = s !== id; }
+function kidName() { return (Save.d.kid || '').trim(); }
+function updateTag() { $('titleTag').textContent = kidName() ? `Oi, ${kidName()}! Mire, lance e veja as galinhas voarem!` : 'Mire, lance e veja as galinhas voarem!'; }
+let nameNext = null;
+function goName(next) {
+  nameNext = next; screen = 'name'; show('nameOv'); $('hud').hidden = true;
+  $('kidName').value = Save.d.kid || ''; $('kidSay').value = Save.d.kidSay || '';
+  setTimeout(() => { try { $('kidName').focus(); } catch (e) {} }, 100);
+}
+/* ---------------- Figurinhas ---------------- */
+const STICKERS = [
+  ['Zé Vesgo', 'derp'], ['Dona Óculos', 'cool'], ['Lili Dançarina', 'dancer'], ['Mamãe Cocó', 'mama'], ['Soneca', 'sleepy'], ['Pepita de Ouro', 'gold'],
+  ['Festa Vermelha', 'plain', 'red'], ['Sargento Có', 'helmet'], ['Festa Azul', 'dancer', 'blue'], ['Verdinha', 'derp', 'green'], ['Galo Legal', 'cool', 'red'], ['Bolota', 'plain'],
+  ['Estrelinha', 'plain', null, 'star'], ['Bolinha', 'dancer', null, 'circle'], ['Tico Triângulo', 'derp', null, 'triangle'], ['Quadradinha', 'mama', null, 'square'], ['Vovó Soneca', 'sleepy', 'blue'], ['DJ Cocó', 'cool', 'green'],
+  ['Capitã Capacete', 'helmet'], ['Dourada Dançante', 'gold'], ['Mamãe Festeira', 'mama', 'red'], ['Vesgo Azul', 'derp', 'blue'], ['Princesa', 'queen'], ['Rainha Cocó', 'queen'],
+];
+function stickerCanvas(i, owned, px) {
+  const [, kind, color, shape] = STICKERS[i];
+  const cvs = document.createElement('canvas'); const n = px * 2; cvs.width = n; cvs.height = n;
+  const c2 = cvs.getContext('2d');
+  const bg = c2.createRadialGradient(n / 2, n / 2, 4, n / 2, n / 2, n * .6);
+  bg.addColorStop(0, owned ? '#fff7d6' : '#e8e0cf'); bg.addColorStop(1, owned ? ['#ffd27a', '#ffb27a', '#9fb0ff', '#ff9ecf'][Math.floor(i / 6)] : '#cfc4ad');
+  c2.fillStyle = bg; c2.beginPath(); c2.arc(n / 2, n / 2, n / 2 - 2, 0, 7); c2.fill();
+  const ch = buildChickens([{ x: 50, y: kind === 'queen' ? 62 : 56, kind, color, shape, ground: true }], 0)[0];
+  ch.blink = 2; ch.sleep = kind === 'sleepy'; ch.px = ch.x; ch.py = ch.y; ch.ph = i; ch.size = Math.min(ch.size, kind === 'queen' ? 1.15 : 1.1);
+  const keep = ctx; ctx = c2;
+  try { c2.save(); c2.scale(n / 100, n / 100); drawChicken(ch); c2.restore(); } finally { ctx = keep; }
+  if (!owned) { c2.globalCompositeOperation = 'source-atop'; c2.fillStyle = 'rgba(120,105,80,.85)'; c2.fillRect(0, 0, n, n); c2.globalCompositeOperation = 'source-over';
+    c2.fillStyle = '#fff'; c2.font = `700 ${n * .3}px Fredoka, sans-serif`; c2.textAlign = 'center'; c2.textBaseline = 'middle'; c2.fillText('?', n / 2, n / 2); }
+  return cvs;
+}
+function goAlbum() {
+  screen = 'album'; show('album'); $('hud').hidden = true;
+  const g = $('albGrid'); g.innerHTML = ''; let got = 0;
+  STICKERS.forEach((st, i) => {
+    const owned = (Save.d.stars[i] || 0) > 0; if (owned) got++;
+    const d = document.createElement('div'); d.className = 'stk' + (owned ? '' : ' off');
+    d.appendChild(stickerCanvas(i, owned, 90));
+    const t = document.createElement('span'); t.textContent = owned ? st[0] : 'Fase ' + (i + 1); d.appendChild(t);
+    g.appendChild(d);
+  });
+  $('albCount').textContent = `${got} de ${STICKERS.length} figurinhas`;
+}
 function goTitle() { screen = 'title'; show('title'); $('hud').hidden = true; demo(); resize(); }
 function goLevels() {
   screen = 'levels'; show('levels'); $('hud').hidden = true; Snd.whistleOff();
@@ -746,6 +842,7 @@ function win() {
   const bonus = spearsLeft * 250 + (perfect ? 1000 : 0);
   score += bonus; updateScore(true);
   if (perfect) { Voice.say('perfect', { queue: true }); popText(200, 300, 'PERFEITO! +1000', '#ffd23f', 34); }
+  const newSticker = !((Save.d.stars[li] || 0) > 0);
   if ((Save.d.stars[li] || 0) < st) Save.d.stars[li] = st;
   const newBest = score > (Save.d.best[li] || 0);
   if (newBest) Save.d.best[li] = score;
@@ -755,28 +852,34 @@ function win() {
   let msg;
   if (L.type === 'word') { msg = 'Você formou ' + L.goal + '!'; Voice.say('spell_' + L.goal, { queue: true }); }
   else { const n = targetsTotal(); msg = n > 1 ? `${n} galinhas voaram!` : '1 galinha voou!'; Voice.say('f' + Math.min(8, n), { queue: true }); Voice.say('praise' + st, { queue: true }); }
+  Voice.name('', '!');
+  if (newSticker) Voice.say('sticker', { queue: true });
   if (last) Voice.say('end', { queue: true });
   setTimeout(() => {
     if (screen !== 'play') return;
-    $('resTitle').textContent = ['Muito bem!', 'Incrível!', 'Parabéns!'][st - 1];
+    $('resTitle').textContent = ['Muito bem', 'Incrível', 'Parabéns'][st - 1] + (kidName() ? ', ' + kidName() : '') + '!';
     $('resEmoji').textContent = L.type === 'word' ? (WORD_EMOJI[L.goal] || '🎉') : (bestCombo >= 3 ? '🔥' : '🐔');
     $('resMsg').textContent = last ? msg + ' Você terminou todas as fases!' : msg;
     $('resScore').innerHTML = `Pontos: <b>${score}</b>${bonus ? ` (+${bonus} de bônus)` : ''}<br>${bestCombo >= 2 ? 'Maior combo: x' + bestCombo + ' · ' : ''}${newBest ? '🏆 Novo recorde!' : 'Recorde: ' + Save.d.best[li]}`;
     const spans = $('resStars').children; for (const s of spans) s.classList.remove('on');
     $('resStars').hidden = false; $('bResNext').hidden = false;
+    const rs = $('resSticker'); rs.innerHTML = ''; rs.hidden = !newSticker;
+    if (newSticker) { $('resEmoji').textContent = ''; rs.appendChild(stickerCanvas(li, true, 96)); const t = document.createElement('span'); t.textContent = 'Nova figurinha: ' + STICKERS[li][0] + '!'; rs.appendChild(t); }
     $('bResNext').textContent = last ? 'Fases ▶' : 'Próxima ▶';
     show('result');
     for (let i = 0; i < st; i++) setTimeout(() => { spans[i].classList.add('on'); Snd.ding(i); }, 350 + i * 320);
   }, 1100);
 }
+const failCount = {};
 function fail() {
+  failCount[li] = (failCount[li] || 0) + 1;
   phase = 'done'; Snd.fail(); Voice.say('fail');
   setTimeout(() => {
     if (screen !== 'play') return;
-    $('resTitle').textContent = 'Quase lá!'; $('resEmoji').textContent = '💪'; $('resStars').hidden = true;
+    $('resTitle').textContent = 'Quase lá' + (kidName() ? ', ' + kidName() : '') + '!'; $('resEmoji').textContent = '💪'; $('resStars').hidden = true;
     const n = targetsLeft();
     $('resMsg').textContent = 'Faltou ' + n + (n > 1 ? ' galinhas' : ' galinha') + '. Tente de novo!';
-    $('resScore').textContent = ''; $('bResNext').hidden = true;
+    $('resScore').textContent = 'Na próxima tentativa você ganha lanças extras!'; $('bResNext').hidden = true; $('resSticker').hidden = true;
     show('result');
   }, 700);
 }
@@ -786,7 +889,7 @@ function toWorld(e) { return { x: (e.clientX - OX) / VS, y: (e.clientY - OY) / V
 cv.addEventListener('pointerdown', e => {
   Snd.init();
   if (screen !== 'play' || phase !== 'aim') return;
-  aiming = true; aim = toWorld(e); hintDone = true; holdT = 0; charge = 0; chargeFull = false; Snd.chargeOn();
+  aiming = true; aim = toWorld(e); hintDone = true; tip = null; holdT = 0; charge = 0; chargeFull = false; Snd.chargeOn();
   try { cv.setPointerCapture(e.pointerId); } catch (_) {}
 });
 cv.addEventListener('pointermove', e => { if (aiming) aim = toWorld(e); });
@@ -1545,6 +1648,41 @@ function drawLauncher() {
     for (let i = 0; i < 3; i++) { const sa = T * 3 + i * 2.1; ctx.fillStyle = 'rgba(255,255,255,.8)'; shapePath('star', L0.x + Math.cos(sa) * 26, L0.y + Math.sin(sa) * 26, 3); ctx.fill(); }
   }
 }
+let tip = null;
+function bestShot() {
+  const L0 = LP(), live = chickens.filter(c => !c.hit);
+  const run = (x, y, a, lv) => { const sp = newSpear(x, y, a, T); if (goldenNext) { sp.big = 1; sp.magnet = 1; } const hit = new Set(); let end = null;
+    while (!sp.done) advance(sp, 60, lv, live, (t, d) => { if (t === 'hit' && d.target) hit.add(d); if (t === 'stick') end = stickPoint(d); }); return { n: hit.size, end, first: [...hit][0] }; };
+  let best = null;
+  for (let a = 0; a < 360; a += 1) { const r = run(L0.x, L0.y, a * Math.PI / 180, LV); if (!best || r.n > best.n) best = { ...r, a }; }
+  if (best.n === 0) {
+    best = null;
+    for (let a = 0; a < 360; a += 4) { const r = run(L0.x, L0.y, a * Math.PI / 180, LV); if (!r.end) continue;
+      let m = 0; for (let b = 0; b < 360; b += 4) { m = Math.max(m, run(r.end.x, r.end.y, b * Math.PI / 180, LV).n); if (m >= 2) break; }
+      if (!best || m > best.m) best = { ...r, a, m }; }
+  }
+  return best;
+}
+function showTip() {
+  if (screen !== 'play' || phase !== 'aim') return;
+  const b = bestShot(); if (!b) return;
+  const L0 = LP(), a = b.a * Math.PI / 180;
+  let d = 150; if (b.first) d = Math.min(220, Math.hypot(b.first.px - L0.x, b.first.py - L0.y));
+  aim = { x: L0.x + Math.cos(a) * d, y: L0.y + Math.sin(a) * d };
+  tip = { x: aim.x, y: aim.y, t: 4 };
+  Voice.say('tip'); Snd.ding(2);
+}
+function drawTip() {
+  if (!tip || phase !== 'aim') return;
+  tip.t -= 1 / 60; if (tip.t <= 0) { tip = null; return; }
+  const k = (T * 2) % 1;
+  ctx.save();
+  ctx.strokeStyle = '#ffd23f'; ctx.lineWidth = 4; ctx.globalAlpha = 1 - k;
+  ctx.beginPath(); ctx.arc(tip.x, tip.y, 14 + k * 26, 0, 7); ctx.stroke();
+  ctx.globalAlpha = 1; ctx.font = '40px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('👆', tip.x + 6, tip.y + 26 + Math.sin(T * 8) * 4);
+  ctx.restore();
+}
 function drawHint() {
   if (hintDone || phase !== 'aim' || screen !== 'play') return;
   const c = chickens[0], L0 = LP(), k = (T * .6) % 1;
@@ -1660,7 +1798,7 @@ function draw() {
   drawFrame();
   drawPads();
   for (const c of chickens) if (c.state === 'fly') drawChicken(c);
-  drawParts(); drawTexts(); drawHint();
+  drawParts(); drawTexts(); drawHint(); drawTip();
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   if (flash > 0) { ctx.fillStyle = `rgba(255,255,255,${flash * .5})`; ctx.fillRect(0, 0, CW, CH); }
   if (zoomK > .01) {
@@ -1679,8 +1817,23 @@ function loop(now) {
 
 /* ---------------- Botões ---------------- */
 function syncToggles() { $('bMusic').classList.toggle('off', !Save.d.music); $('bSound').classList.toggle('off', !Save.d.sound); $('bSound').textContent = Save.d.sound ? '🔊' : '🔇'; }
-$('bPlay').onclick = () => { Snd.init(); Snd.click(); setTimeout(() => { Voice.say('title'); Voice.chick('c1'); }, 600); goLevels(); };
+function playGreeting() { setTimeout(() => { Voice.say('title'); Voice.name('Oi, ', '! Vamos brincar?'); Voice.chick('c1'); }, 600); }
+$('bPlay').onclick = () => { Snd.init(); Snd.click(); if (!kidName()) { goName('levels'); return; } playGreeting(); goLevels(); };
+$('bName').onclick = () => { Snd.init(); Snd.click(); goName('title'); };
+$('bHear').onclick = () => {
+  Snd.init(); const n = ($('kidSay').value || $('kidName').value).trim(); if (!n || !Voice.tts) return;
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('Oi, ' + n + '!'); u.lang = 'pt-BR'; if (Voice.v) u.voice = Voice.v; u.rate = .95; u.pitch = 1.3; speechSynthesis.speak(u); } catch (e) {}
+};
+$('nameForm').addEventListener('submit', e => {
+  e.preventDefault(); Snd.init(); Snd.click();
+  Save.d.kid = $('kidName').value.trim().slice(0, 20); Save.d.kidSay = $('kidSay').value.trim().slice(0, 30); Save.save(); updateTag();
+  if (nameNext === 'levels') { playGreeting(); goLevels(); } else { if (kidName()) Voice.name('Oi, ', '!'); goTitle(); }
+});
 $('bBackTitle').onclick = () => { Snd.click(); goTitle(); };
+$('bAlbum').onclick = () => { Snd.init(); Snd.click(); goAlbum(); };
+$('bAlbum2').onclick = () => { Snd.click(); goAlbum(); };
+$('bAlbBack').onclick = () => { Snd.click(); goLevels(); };
+$('bTip').onclick = () => { Snd.init(); showTip(); };
 $('bHome').onclick = () => { Snd.click(); Voice.stop(); goLevels(); };
 $('bRetry').onclick = () => { Snd.click(); if (screen === 'play') loadLevel(li, true); };
 $('bMusic').onclick = () => { Snd.init(); Snd.setMusic(!Save.d.music); syncToggles(); };
@@ -1688,6 +1841,7 @@ $('bSound').onclick = () => { Snd.init(); Snd.setSound(!Save.d.sound); syncToggl
 $('bResRetry').onclick = () => { Snd.click(); show(null); loadLevel(li, true); };
 $('bResNext').onclick = () => { Snd.click(); if (li < LEVELS.length - 1) { show(null); loadLevel(li + 1); } else goLevels(); };
 syncToggles();
+updateTag();
 
 goTitle();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(resize);
