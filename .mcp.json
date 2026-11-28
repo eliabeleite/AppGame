@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "tripo": {
+      "type": "http",
+      "url": "https://msapi.tripo3d.ai/mcp",
+      "oauth": {
+        "clientId": "studio-claude-code",
+        "callbackPort": 3000
+      }
+    }
+  }
+}
